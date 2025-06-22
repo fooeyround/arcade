@@ -5,10 +5,9 @@
 package net.casual.arcade.border.extensions
 
 import eu.pb4.polymer.virtualentity.api.ElementHolder
-import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment
-import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment
-import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement
+import eu.pb4.polymer.virtualentity.impl.HolderAttachmentHolder
 import net.casual.arcade.events.GlobalEventHandler
 import net.casual.arcade.events.ListenerRegistry.Companion.register
 import net.casual.arcade.events.server.player.PlayerClientboundPacketEvent
@@ -16,17 +15,20 @@ import net.casual.arcade.extensions.PlayerExtension
 import net.casual.arcade.extensions.event.PlayerExtensionEvent
 import net.casual.arcade.extensions.event.PlayerExtensionEvent.Companion.getExtension
 import net.casual.arcade.scheduler.GlobalTickedScheduler
+import net.casual.arcade.utils.ArcadeUtils
 import net.minecraft.core.Direction
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket
 import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket
 import net.minecraft.network.protocol.game.ClientboundSetBorderLerpSizePacket
 import net.minecraft.network.protocol.game.ClientboundSetBorderSizePacket
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.network.ServerGamePacketListenerImpl
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.border.BorderStatus
 import net.minecraft.world.level.border.WorldBorder
+import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
 
 public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(player)  {
@@ -56,11 +58,18 @@ public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(p
 
         this.updateState()
         this.updateScale()
-        this.updateTranslation()
+        this.updateTranslation(this.player.position().toVector3f())
 
         // FIXME: wtf is this jank
         GlobalTickedScheduler.later {
+//            ManualAttachment(this.holder,this.player.level()) {
+//                this.updateState()
+//                this.updateScale()
+//                this.updateTranslation()
+//                return@ManualAttachment Vec3(this.border.centerX, 0.0, this.border.centerZ)
+//            }
             BorderAttachment()
+
         }
     }
 
@@ -78,7 +87,6 @@ public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(p
 
         setOf(this.north,this.south,this.east,this.west).forEach {
             it.blockState = state
-            it.viewRange = 1.0E40F
         }
     }
 
@@ -88,23 +96,23 @@ public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(p
         // TODO: We probably only want to scale to what the
         //   player can actually see...
         //   We don't want to send the north border if it's thousands of blocks away...
-        this.north.scale = Vector3f(diameter, 300F, 0F)
-        this.south.scale = Vector3f(diameter, 300F, 0F)
-        this.east.scale = Vector3f(0F, 300F, diameter)
-        this.west.scale = Vector3f(0F, 300F, diameter)
+        this.north.scale = Vector3f(diameter, 400F, 0.0F)
+        this.south.scale = Vector3f(diameter, 400F, 0.0F)
+        this.east.scale = Vector3f(0.0F, 400F, diameter)
+        this.west.scale = Vector3f(0.0F, 400F, diameter)
     }
 
-    private fun updateTranslation() {
+    private fun updateTranslation(playerPos: Vector3f) {
         val radius = this.border.size.toFloat() / 2.0F
         val north = Direction.NORTH.step().mul(radius)
         val west = Direction.WEST.step().mul(radius)
-        val playerPos = this.player.position().toVector3f()
         val borderPos = Vector3f(this.border.centerX.toFloat(), 0F, this.border.centerZ.toFloat())
 
-        this.north.translation = north.add(west, Vector3f()).sub(playerPos).add(borderPos)
-        this.south.translation = north.negate(Vector3f()).add(west).sub(playerPos).add(borderPos)
-        this.east.translation = west.negate(Vector3f()).add(north).sub(playerPos).add(borderPos)
-        this.west.translation = west.add(north).sub(playerPos).add(borderPos)
+        //FIXME: player moving makes this shake. playerPos is not the same as polymer's position
+        this.north.translation = north.add(west, Vector3f()).add(borderPos).sub(playerPos)
+        this.south.translation = north.negate(Vector3f()).add(west).add(borderPos).sub(playerPos)
+        this.east.translation = west.negate(Vector3f()).add(north).add(borderPos).sub(playerPos)
+        this.west.translation = west.add(north).add(borderPos).sub(playerPos)
     }
 
     private fun setupInterpolation() {
@@ -126,9 +134,11 @@ public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(p
         return this.north.scale.x() != this.border.size.toFloat()
     }
 
-    private inner class BorderAttachment: EntityAttachment(this.holder, this.player, true) {
+    private inner class BorderAttachment: HolderAttachment {
+        private var pos = player.position()
         init {
-            this.holder().attachment = this
+            (player as HolderAttachmentHolder).`polymerVE$addHolder`(this)
+            holder.attachment = this
             super.startWatching(player)
         }
 
@@ -140,17 +150,54 @@ public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(p
             // Do nothing...
         }
 
+        override fun holder(): ElementHolder? {
+            return holder
+        }
+
+        override fun destroy() {
+            (player as HolderAttachmentHolder).`polymerVE$removeHolder`(this)
+            if (holder.attachment === this) {
+                holder.setAttachment(null)
+            }
+        }
+
+        override fun canUpdatePosition(): Boolean {
+            //FIXME: This should only update when the player is a chunk away.
+            return !player.isRemoved && player.level().getEntity(player.id) === player
+        }
+
+
+        override fun getPos(): Vec3? {
+            return pos;
+        }
+
+        override fun getWorld(): ServerLevel? {
+            return player.level()
+        }
+
         override fun updateCurrentlyTracking(currentlyTracking: MutableCollection<ServerGamePacketListenerImpl>?) {
+            currentlyTracking?.forEach {
+                holder.startWatching(it.player.connection)
+            }
+//             holder.startWatching(player.connection)
+        }
+
+
+        override fun updateTracking(tracking: ServerGamePacketListenerImpl?) {
             // Do nothing...
         }
 
+
         override fun tick() {
             // TODO: Interpolate
+            if (player.position().distanceTo(this.pos) >= 16.0) {
+                this.pos = player.position()
+            }
             updateState()
             updateScale()
-            updateTranslation()
+            updateTranslation(this.pos.toVector3f())
 
-            holder.tick()
+            super.tick()
         }
     }
 
