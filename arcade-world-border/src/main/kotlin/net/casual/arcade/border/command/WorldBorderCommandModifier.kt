@@ -9,16 +9,22 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import net.casual.arcade.border.CustomBorder
+import net.casual.arcade.border.extensions.PlayerWorldBorderExtension
+import net.casual.arcade.border.extensions.PlayerWorldBorderExtension.Companion.setUseCustomDisplayWorldBorder
 import net.casual.arcade.commands.CommandTree
 import net.casual.arcade.commands.argument
 import net.casual.arcade.commands.arguments.EnumArgument
+import net.casual.arcade.commands.executes
 import net.casual.arcade.commands.literal
 import net.casual.arcade.commands.success
+import net.casual.arcade.extensions.event.PlayerExtensionEvent.Companion.getExtension
 import net.casual.arcade.utils.time.MinecraftTimeUnit
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.coordinates.Vec2Argument
 import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.border.WorldBorder
 import kotlin.math.abs
 
@@ -37,6 +43,25 @@ internal object WorldBorderCommandModifier: CommandTree {
                     }
                 }
             }
+            literal("displaymode") {
+                literal("new") {
+                    argument("player", EntityArgument.player()) {
+                        executes {
+                            it.source.player?.setUseCustomDisplayWorldBorder(true)
+                            return@executes 1
+                        }
+                    }
+                }
+                literal("vanilla") {
+                    argument("player", EntityArgument.player()) {
+                        executes {
+                            it.source.player?.setUseCustomDisplayWorldBorder(false)
+                            return@executes 1
+                        }
+                    }
+                }
+            }
+
         }
     }
 

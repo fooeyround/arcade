@@ -76,10 +76,10 @@ public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(p
             else -> Blocks.LIGHT_BLUE_STAINED_GLASS
         }.defaultBlockState()
 
-        this.north.blockState = state
-        this.south.blockState = state
-        this.east.blockState = state
-        this.west.blockState = state
+        setOf(this.north,this.south,this.east,this.west).forEach {
+            it.blockState = state
+            it.viewRange = 1.0E40F
+        }
     }
 
     private fun updateScale() {
@@ -113,6 +113,8 @@ public class PlayerWorldBorderExtension(player: ServerPlayer): PlayerExtension(p
         this.south.interpolationDuration = lerpTime
         this.east.interpolationDuration = lerpTime
         this.west.interpolationDuration = lerpTime
+
+
 
         this.north.startInterpolation()
         this.south.startInterpolation()
