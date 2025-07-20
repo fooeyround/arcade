@@ -11,6 +11,9 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.metadata.ModOrigin
 import net.fabricmc.loader.impl.metadata.AbstractModMetadata
 
+// TODO:
+//  - Add some sort of plugin system to allow compile only dependency
+//  - Add nametag support for replays
 public object ArcadeReplay: ModInitializer {
     override fun onInitialize() {
         ReplayChunkRecorders.registerEvents()
