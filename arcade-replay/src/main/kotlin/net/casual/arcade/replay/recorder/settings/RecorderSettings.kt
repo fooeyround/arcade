@@ -13,8 +13,6 @@ import kotlin.time.Duration
 public interface RecorderSettings {
     public val debug: Boolean
 
-    public val format: ReplayFormat
-
     public val worldName: String
     public val serverName: String
     public val fixedDaylightCycle: Long

@@ -4,8 +4,7 @@
  */
 package net.casual.arcade.replay.mixins.common;
 
-import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorder;
-import net.casual.arcade.replay.recorder.player.PlayerRecorders;
+import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorders;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,16 +16,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChunkMap.class)
 public class ChunkMapMixin {
-	@Inject(
-		method = "broadcast",
-		at = @At("HEAD")
-	)
-	private void onBroadcast(Entity entity, Packet<?> packet, CallbackInfo ci) {
-		if (entity instanceof ServerPlayer player) {
-			ReplayPlayerRecorder recorder = PlayerRecorders.get(player);
-			if (recorder != null) {
-				recorder.record(packet);
-			}
-		}
-	}
+    @Inject(
+        method = "broadcast",
+        at = @At("HEAD")
+    )
+    private void onBroadcast(Entity entity, Packet<?> packet, CallbackInfo ci) {
+        if (entity instanceof ServerPlayer player) {
+            ReplayPlayerRecorders.record(player, packet);
+        }
+    }
 }

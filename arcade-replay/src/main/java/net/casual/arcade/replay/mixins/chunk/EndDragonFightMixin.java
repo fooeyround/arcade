@@ -4,9 +4,9 @@
  */
 package net.casual.arcade.replay.mixins.chunk;
 
-import net.casual.arcade.utils.MathUtils;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecordable;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
+import net.casual.arcade.utils.MathUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -21,18 +21,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EndDragonFight.class)
 public class EndDragonFightMixin {
-	@Shadow @Final private BlockPos origin;
+    @Shadow
+    @Final
+    private BlockPos origin;
 
-	@Shadow @Final private ServerBossEvent dragonEvent;
+    @Shadow
+    @Final
+    private ServerBossEvent dragonEvent;
 
-	@Shadow @Final private ServerLevel level;
+    @Shadow
+    @Final
+    private ServerLevel level;
 
-	@Inject(
-		method = "updatePlayers",
-		at = @At("TAIL")
-	)
-	private void onUpdate(CallbackInfo ci) {
-		BoundingBox box = MathUtils.createBoundingBox(this.origin, 192);
-		ReplayChunkRecorders.updateRecordable((ReplayChunkRecordable) this.dragonEvent, this.level.dimension(), box);
-	}
+    @Inject(
+        method = "updatePlayers",
+        at = @At("TAIL")
+    )
+    private void onUpdate(CallbackInfo ci) {
+        BoundingBox box = MathUtils.createBoundingBox(this.origin, 192);
+        ReplayChunkRecorders.updateRecordable((ReplayChunkRecordable) this.dragonEvent, this.level.dimension(), box);
+    }
 }

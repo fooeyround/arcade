@@ -16,6 +16,7 @@ import net.casual.arcade.utils.getDebugName
 import net.casual.arcade.replay.ArcadeReplay
 import net.casual.arcade.replay.events.ReplayRecorderStartEvent
 import net.casual.arcade.replay.events.ReplayRecorderStopEvent
+import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.io.writer.ReplayWriter
 import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.broadcastToOpsAndConsole
 import net.casual.arcade.replay.util.DebugPacketData
@@ -64,7 +65,8 @@ public abstract class ReplayRecorder(
     public val server: MinecraftServer,
     public val profile: GameProfile,
     public val settings: RecorderSettings,
-    provider: (ReplayRecorder) -> ReplayWriter
+    public val format: ReplayFormat,
+    protected val path: Path,
 ) {
     private val packets by lazy { Object2ObjectOpenHashMap<String, DebugPacketData>() }
 
@@ -79,7 +81,7 @@ public abstract class ReplayRecorder(
     private var ignore = false
 
     @Suppress("LeakingThis")
-    protected val writer: ReplayWriter = provider.invoke(this)
+    protected val writer: ReplayWriter = format.writer(path).invoke(this)
 
     /**
      * The directory at which all the temporary replay
@@ -419,7 +421,7 @@ public abstract class ReplayRecorder(
     protected open fun canRecordPacket(packet: Packet<*>): Boolean {
         if (packet is ClientboundCustomPayloadPacket) {
             val payload = packet.payload
-            if (payload is RecordablePayload && !payload.shouldRecord()) {
+            if (payload is RecordablePayload && !payload.shouldRecord(this)) {
                 return false
             }
             // FIXME: Add distant horizons support?

@@ -20,32 +20,32 @@ import java.util.Collection;
 
 @Mixin(ServerConfigurationPacketListenerImpl.class)
 public class ServerConfigurationPacketListenerImplMixin {
-	@Inject(
-		method = "handleConfigurationFinished",
-		at = @At(
-			value = "INVOKE",
-			target = "Lnet/minecraft/server/players/PlayerList;placeNewPlayer(Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/network/CommonListenerCookie;)V",
-			shift = At.Shift.AFTER
-		)
-	)
-	private void afterPlayerSpawned(
-		ServerboundFinishConfigurationPacket serverboundFinishConfigurationPacket,
-		CallbackInfo ci,
-		@Local ServerPlayer serverPlayer
-	) {
-		// Merge the packs into the GamePacketListener
-		Collection<ClientboundResourcePackPushPacket> packs = ((PackTracker) this).replay$getPacks();
-		((PackTracker) serverPlayer.connection).replay$addPacks(packs);
-	}
+    @Inject(
+        method = "handleConfigurationFinished",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/server/players/PlayerList;placeNewPlayer(Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/network/CommonListenerCookie;)V",
+            shift = At.Shift.AFTER
+        )
+    )
+    private void afterPlayerSpawned(
+        ServerboundFinishConfigurationPacket serverboundFinishConfigurationPacket,
+        CallbackInfo ci,
+        @Local ServerPlayer serverPlayer
+    ) {
+        // Merge the packs into the GamePacketListener
+        Collection<ClientboundResourcePackPushPacket> packs = ((PackTracker) this).replay$getPacks();
+        ((PackTracker) serverPlayer.connection).replay$addPacks(packs);
+    }
 
-	@Inject(
-		method = "startNextTask",
-		at = @At("HEAD"),
-		cancellable = true
-	)
-	private void onStartNextTask(CallbackInfo ci) {
-		if ((Object) this instanceof RejoinConfigurationPacketListener) {
-			ci.cancel();
-		}
-	}
+    @Inject(
+        method = "startNextTask",
+        at = @At("HEAD"),
+        cancellable = true
+    )
+    private void onStartNextTask(CallbackInfo ci) {
+        if ((Object) this instanceof RejoinConfigurationPacketListener) {
+            ci.cancel();
+        }
+    }
 }

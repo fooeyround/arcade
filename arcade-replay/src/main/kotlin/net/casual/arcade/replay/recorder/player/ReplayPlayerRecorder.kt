@@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile
 import net.casual.arcade.events.GlobalEventHandler
 import net.casual.arcade.replay.compat.polymer.PolymerPacketPatcher
 import net.casual.arcade.replay.events.player.ReplayPlayerRecorderSnapshotEvent
+import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.recorder.ChunkSender
 import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.casual.arcade.replay.recorder.rejoin.RejoinedReplayPlayer
@@ -29,6 +30,7 @@ import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.Vec2
 import net.minecraft.world.phys.Vec3
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import kotlin.io.path.nameWithoutExtension
@@ -44,8 +46,9 @@ public class ReplayPlayerRecorder internal constructor(
     server: MinecraftServer,
     profile: GameProfile,
     settings: RecorderSettings,
-    provider: (ReplayRecorder) -> ReplayWriter
-): ReplayRecorder(server, profile, settings, provider), ChunkSender {
+    format: ReplayFormat,
+    path: Path,
+): ReplayRecorder(server, profile, settings, format, path), ChunkSender {
     private val player: ServerPlayer?
         get() = this.server.playerList.getPlayer(this.recordingPlayerUUID)
 
@@ -119,17 +122,17 @@ public class ReplayPlayerRecorder internal constructor(
         if (this.player == null) {
             return false
         }
-        val recorder = PlayerRecorders.create(this.server, this.profile)
+        val recorder = ReplayPlayerRecorders.create(this.server, this.profile, this.path, this.format, this.settings)
         return recorder.start(StartingMode.Restart)
     }
 
     /**
-     * This updates the [PlayerRecorders] manager.
+     * This updates the [ReplayPlayerRecorders] manager.
      *
      * @param future The future that will complete once the replay has closed.
      */
     override fun onClosing(future: CompletableFuture<Long>) {
-        PlayerRecorders.close(this.server, this, future)
+        ReplayPlayerRecorders.close(this.server, this, future)
     }
 
     override fun takeSnapshot() {

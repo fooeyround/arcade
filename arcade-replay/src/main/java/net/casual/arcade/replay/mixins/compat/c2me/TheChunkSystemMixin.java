@@ -5,9 +5,9 @@
 package net.casual.arcade.replay.mixins.compat.c2me;
 
 import com.ishland.c2me.rewrites.chunksystem.common.*;
-import com.ishland.flowsched.scheduler.DaemonizedStatusAdvancingScheduler;
 import com.ishland.flowsched.scheduler.ItemHolder;
 import com.ishland.flowsched.scheduler.ItemStatus;
+import com.ishland.flowsched.scheduler.StatusAdvancingScheduler;
 import net.casual.arcade.replay.mixins.rejoin.ChunkMapAccessor;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecordable;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder;
@@ -23,17 +23,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.concurrent.ThreadFactory;
-
 @Mixin(value = TheChunkSystem.class, remap = false)
-public abstract class TheChunkSystemMixin extends DaemonizedStatusAdvancingScheduler<ChunkPos, ChunkState, ChunkLoadingContext, NewChunkHolderVanillaInterface> {
-    @Shadow @Final private ChunkMap tacs;
+public abstract class TheChunkSystemMixin extends StatusAdvancingScheduler<ChunkPos, ChunkState, ChunkLoadingContext, NewChunkHolderVanillaInterface> {
+    @Shadow
+    @Final
+    private ChunkMap tacs;
 
-    @Shadow protected abstract ItemStatus<ChunkPos, ChunkState, ChunkLoadingContext> getUnloadedStatus();
-
-    protected TheChunkSystemMixin(ThreadFactory threadFactory) {
-        super(threadFactory);
-    }
+    @Shadow
+    protected abstract ItemStatus<ChunkPos, ChunkState, ChunkLoadingContext> getUnloadedStatus();
 
     @Inject(
         method = "onItemUpgrade",

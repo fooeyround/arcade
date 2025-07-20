@@ -75,9 +75,6 @@ public class MinecraftServerMixin {
 		at = @At("HEAD")
 	)
 	private void onShutdown(CallbackInfo ci) {
-		ServerStoppingEvent old = new ServerStoppingEvent((MinecraftServer) (Object) this);
-		GlobalEventHandler.Server.broadcast(old);
-
 		ServerStopEvent event = new ServerStopEvent((MinecraftServer) (Object) this);
 		GlobalEventHandler.Server.broadcast(event, BuiltInEventPhases.PRE_PHASES);
 	}

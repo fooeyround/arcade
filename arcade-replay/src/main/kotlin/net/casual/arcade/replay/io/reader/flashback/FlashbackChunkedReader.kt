@@ -7,6 +7,7 @@ package net.casual.arcade.replay.io.reader.flashback
 import io.netty.buffer.Unpooled
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import net.casual.arcade.replay.io.FlashbackIO
 import net.casual.arcade.replay.util.flashback.FlashbackAction
 import net.casual.arcade.replay.util.flashback.FlashbackMeta
 import net.casual.arcade.utils.JsonUtils
@@ -125,7 +126,7 @@ public class FlashbackChunkedReader(
         this.buffer.writeBytes(this.current.value.path.readBytes())
 
         val magic = this.buffer.readInt()
-        if (magic != net.casual.arcade.replay.io.FlashbackIO.MAGIC_NUMBER) {
+        if (magic != FlashbackIO.MAGIC_NUMBER) {
             throw IllegalStateException("Flashback chunk has invalid magic!")
         }
 
@@ -151,9 +152,9 @@ public class FlashbackChunkedReader(
     }
 
     private fun readMeta(): FlashbackMeta {
-        var metadata = this.system.getPath(net.casual.arcade.replay.io.FlashbackIO.METADATA)
+        var metadata = this.system.getPath(FlashbackIO.METADATA)
         if (metadata.notExists()) {
-            metadata = this.system.getPath(net.casual.arcade.replay.io.FlashbackIO.METADATA_OLD)
+            metadata = this.system.getPath(FlashbackIO.METADATA_OLD)
             if (metadata.notExists()) {
                 throw IllegalStateException("Flashback file has no metadata!")
             }

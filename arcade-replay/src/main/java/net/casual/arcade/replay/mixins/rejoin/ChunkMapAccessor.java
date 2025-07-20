@@ -14,10 +14,10 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(ChunkMap.class)
 public interface ChunkMapAccessor {
-	@Accessor("level")
-	ServerLevel getLevel();
+    @Accessor("level")
+    ServerLevel getLevel();
 
-	@Nullable
-	@Invoker("getUpdatingChunkIfPresent")
-	ChunkHolder getTickingChunk(long pos);
+    @Nullable
+    @Invoker("getUpdatingChunkIfPresent")
+    ChunkHolder getTickingChunk(long pos);
 }

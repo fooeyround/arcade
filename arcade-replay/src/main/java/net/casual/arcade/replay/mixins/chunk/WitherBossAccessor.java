@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(WitherBoss.class)
 public interface WitherBossAccessor {
-	@Accessor("bossEvent")
-	ServerBossEvent getBossEvent();
+    @Accessor("bossEvent")
+    ServerBossEvent getBossEvent();
 }

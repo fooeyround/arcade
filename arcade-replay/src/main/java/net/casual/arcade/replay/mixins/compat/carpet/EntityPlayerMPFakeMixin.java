@@ -6,7 +6,6 @@ package net.casual.arcade.replay.mixins.compat.carpet;
 
 import carpet.patches.EntityPlayerMPFake;
 import com.mojang.authlib.GameProfile;
-import me.senseiwells.replay.ServerReplay;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
@@ -15,15 +14,12 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(EntityPlayerMPFake.class)
 public class EntityPlayerMPFakeMixin extends ServerPlayer {
-	public EntityPlayerMPFakeMixin(MinecraftServer minecraftServer, ServerLevel serverLevel, GameProfile gameProfile, ClientInformation clientInformation) {
-		super(minecraftServer, serverLevel, gameProfile, clientInformation);
-	}
+    public EntityPlayerMPFakeMixin(MinecraftServer minecraftServer, ServerLevel serverLevel, GameProfile gameProfile, ClientInformation clientInformation) {
+        super(minecraftServer, serverLevel, gameProfile, clientInformation);
+    }
 
-	@Override
-	public int requestedViewDistance() {
-		if (ServerReplay.getConfig().getFixCarpetBotViewDistance()) {
-			return this.server.getPlayerList().getViewDistance();
-		}
-		return super.requestedViewDistance();
-	}
+    @Override
+    public int requestedViewDistance() {
+        return this.level().getServer().getPlayerList().getViewDistance();
+    }
 }

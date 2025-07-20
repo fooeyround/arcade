@@ -9,6 +9,8 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.casual.arcade.replay.mixins.rejoin.ChunkMapAccessor;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecordable;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
+import net.casual.arcade.utils.EntityUtilsKt;
+import net.casual.arcade.utils.impl.WrappedTrackedEntity;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,10 +34,11 @@ public class NearbyEntityTrackingMixin {
         @Local boolean positionUpdated
     ) {
         if (positionUpdated) {
-            ServerLevel level = player.serverLevel();
-            ChunkMap map = level.getChunkSource().chunkMap;
-            ChunkMap.TrackedEntity tracked = ((ChunkMapAccessor) map).getEntityMap().get(player.getId());
-            ReplayChunkRecorders.updateRecordable((ReplayChunkRecordable) tracked, level.dimension(), player.chunkPosition());
+            ServerLevel level = player.level();
+            ChunkMap.TrackedEntity wrapped = EntityUtilsKt.getTrackedEntity(player);
+            if (wrapped != null) {
+                ReplayChunkRecorders.updateRecordable((ReplayChunkRecordable) wrapped, level.dimension(), player.chunkPosition());
+            }
         }
     }
 }

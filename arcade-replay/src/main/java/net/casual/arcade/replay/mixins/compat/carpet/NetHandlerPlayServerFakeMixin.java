@@ -6,7 +6,7 @@ package net.casual.arcade.replay.mixins.compat.carpet;
 
 import carpet.patches.NetHandlerPlayServerFake;
 import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorder;
-import net.casual.arcade.replay.recorder.player.PlayerRecorders;
+import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorders;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
@@ -20,18 +20,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(NetHandlerPlayServerFake.class)
 public class NetHandlerPlayServerFakeMixin extends ServerGamePacketListenerImpl {
-	public NetHandlerPlayServerFakeMixin(MinecraftServer minecraftServer, Connection connection, ServerPlayer serverPlayer, CommonListenerCookie commonListenerCookie) {
-		super(minecraftServer, connection, serverPlayer, commonListenerCookie);
-	}
+    public NetHandlerPlayServerFakeMixin(MinecraftServer minecraftServer, Connection connection, ServerPlayer serverPlayer, CommonListenerCookie commonListenerCookie) {
+        super(minecraftServer, connection, serverPlayer, commonListenerCookie);
+    }
 
-	@Inject(
-		method = "send",
-		at = @At("HEAD")
-	)
-	private void onSendPacket(Packet<?> packet, CallbackInfo ci) {
-		ReplayPlayerRecorder recorder = PlayerRecorders.get(this.player);
-		if (recorder != null) {
-			recorder.record(packet);
-		}
-	}
+    @Inject(
+        method = "send",
+        at = @At("HEAD")
+    )
+    private void onSendPacket(Packet<?> packet, CallbackInfo ci) {
+        ReplayPlayerRecorders.record(this.player, packet);
+    }
 }

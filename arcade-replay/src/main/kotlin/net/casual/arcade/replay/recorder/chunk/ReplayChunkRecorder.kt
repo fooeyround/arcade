@@ -7,14 +7,14 @@ package net.casual.arcade.replay.recorder.chunk
 import com.google.gson.JsonObject
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.casual.arcade.events.GlobalEventHandler
-import net.casual.arcade.replay.recorder.ChunkSender
 import net.casual.arcade.replay.compat.polymer.PolymerPacketPatcher
 import net.casual.arcade.replay.events.chunk.ReplayChunkRecorderPauseEvent
 import net.casual.arcade.replay.events.chunk.ReplayChunkRecorderSnapshotEvent
 import net.casual.arcade.replay.events.chunk.ReplayChunkRecorderUnpauseEvent
-import net.casual.arcade.replay.io.writer.ReplayWriter
+import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.mixins.chunk.WitherBossAccessor
 import net.casual.arcade.replay.mixins.rejoin.ChunkMapAccessor
+import net.casual.arcade.replay.recorder.ChunkSender
 import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorder
 import net.casual.arcade.replay.recorder.rejoin.RejoinedReplayPlayer
@@ -40,6 +40,7 @@ import net.minecraft.world.phys.Vec2
 import net.minecraft.world.phys.Vec3
 import org.apache.commons.lang3.builder.ToStringBuilder
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -59,8 +60,9 @@ public class ReplayChunkRecorder internal constructor(
     public val chunks: ChunkArea,
     public val recorderName: String,
     settings: RecorderSettings,
-    provider: (ReplayRecorder) -> ReplayWriter
-): ReplayRecorder(chunks.level.server, PROFILE, settings, provider), ChunkSender {
+    format: ReplayFormat,
+    path: Path,
+): ReplayRecorder(chunks.level.server, PROFILE, settings, format, path), ChunkSender {
     private val dummy by lazy {
         val player = ServerPlayer(this.server, this.chunks.level, PROFILE, ClientInformation.createDefault())
         ReplayChunkGamePacketListener(this, player)
@@ -156,7 +158,7 @@ public class ReplayChunkRecorder internal constructor(
      * @return Whether it successfully restarted.
      */
     override fun restart(): Boolean {
-        val recorder = ReplayChunkRecorders.create(this.chunks, this.writer.path, this.settings, this.recorderName)
+        val recorder = ReplayChunkRecorders.create(this.chunks, this.path, this.format, this.settings, this.recorderName)
         return recorder.start(StartingMode.Restart)
     }
 

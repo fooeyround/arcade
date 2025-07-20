@@ -5,6 +5,8 @@
 package net.casual.arcade.replay.compat.voicechat
 
 import net.casual.arcade.replay.api.network.RecordablePayload
+import net.casual.arcade.replay.io.ReplayFormat
+import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 
@@ -12,8 +14,8 @@ internal class VoicechatPayload private constructor(
     private val type: CustomPacketPayload.Type<*>,
     private val writer: (FriendlyByteBuf) -> Unit
 ): CustomPacketPayload, RecordablePayload {
-    override fun shouldRecord(): Boolean {
-        return true
+    override fun shouldRecord(recorder: ReplayRecorder): Boolean {
+        return recorder.settings.recordVoiceChat && recorder.format == ReplayFormat.ReplayMod
     }
 
     override fun record(buf: FriendlyByteBuf) {

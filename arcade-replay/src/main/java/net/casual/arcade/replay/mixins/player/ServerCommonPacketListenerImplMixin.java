@@ -5,9 +5,10 @@
 package net.casual.arcade.replay.mixins.player;
 
 import com.mojang.authlib.GameProfile;
+import io.netty.channel.ChannelFutureListener;
 import net.casual.arcade.replay.ducks.ReplayViewable;
 import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorder;
-import net.casual.arcade.replay.recorder.player.PlayerRecorders;
+import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorders;
 import net.casual.arcade.replay.viewer.ReplayViewer;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketSendListener;
@@ -23,34 +24,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 // other mods which modify the packs should come first
 @Mixin(value = ServerCommonPacketListenerImpl.class, priority = 5000)
 public abstract class ServerCommonPacketListenerImplMixin {
-	@Shadow protected abstract GameProfile playerProfile();
+    @Shadow
+    protected abstract GameProfile playerProfile();
 
-	@Inject(
-		method = "send(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V",
-		at = @At("HEAD")
-	)
-	private void onPacket(Packet<?> packet, PacketSendListener listener, CallbackInfo ci) {
-		ReplayPlayerRecorder recorder = PlayerRecorders.getByUUID(this.playerProfile().getId());
-		if (recorder != null) {
-			recorder.record(packet);
-		}
-	}
+    @Inject(
+        method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V",
+        at = @At("HEAD")
+    )
+    private void onPacket(Packet<?> packet, ChannelFutureListener sendListener, CallbackInfo ci) {
+		ReplayPlayerRecorders.record(this.playerProfile().getId(), packet);
+    }
 
-	@Inject(
-		method = "onDisconnect",
-		at = @At("TAIL")
-	)
-	private void onDisconnect(DisconnectionDetails disconnectionDetails, CallbackInfo ci) {
-		ReplayPlayerRecorder recorder = PlayerRecorders.getByUUID(this.playerProfile().getId());
-		if (recorder != null) {
-			recorder.stop();
-		}
+    @Inject(
+        method = "onDisconnect",
+        at = @At("TAIL")
+    )
+    private void onDisconnect(DisconnectionDetails disconnectionDetails, CallbackInfo ci) {
+        ReplayPlayerRecorders.stop(this.playerProfile().getId());
 
-		if (this instanceof ReplayViewable viewable) {
-			ReplayViewer viewer = viewable.replay$getViewingReplay();
-			if (viewer != null) {
-				viewer.close();
-			}
-		}
-	}
+        if (this instanceof ReplayViewable viewable) {
+            ReplayViewer viewer = viewable.replay$getViewingReplay();
+            if (viewer != null) {
+                viewer.close();
+            }
+        }
+    }
 }

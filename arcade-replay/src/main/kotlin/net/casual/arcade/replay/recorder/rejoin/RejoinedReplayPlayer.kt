@@ -35,6 +35,7 @@ public class RejoinedReplayPlayer private constructor(
         val connection = this.original.connection
         // Our connection may be null if we're using a fake player
         if (connection is PackTracker) {
+
             for (packet in connection.`replay$getPacks`()) {
                 this.recorder.record(packet)
             }

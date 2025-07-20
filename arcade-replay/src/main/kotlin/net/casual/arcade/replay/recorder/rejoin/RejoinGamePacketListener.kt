@@ -5,11 +5,9 @@
 package net.casual.arcade.replay.recorder.rejoin
 
 import io.netty.channel.ChannelFutureListener
-import me.senseiwells.replay.ServerReplay
+import net.casual.arcade.utils.ArcadeUtils
 import net.casual.arcade.utils.PlayerUtils.levelServer
-import net.casual.arcade.replay.recorder.rejoin.RejoinedReplayPlayer
 import net.minecraft.network.Connection
-import net.minecraft.network.PacketSendListener
 import net.minecraft.network.protocol.Packet
 import net.minecraft.server.network.CommonListenerCookie
 import net.minecraft.server.network.ServerGamePacketListenerImpl
@@ -29,7 +27,7 @@ public class RejoinGamePacketListener(
             this.replay.recorder.record(packet)
         } catch (e: Exception) {
             val name = this.player.scoreboardName
-            ServerReplay.logger.error("Failed to record rejoin packet {} for {}", packet, name, e)
+            ArcadeUtils.logger.error("Failed to record rejoin packet {} for {}", packet, name, e)
         }
     }
 }

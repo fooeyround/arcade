@@ -4,6 +4,7 @@
  */
 package net.casual.arcade.replay.api.network
 
+import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 
@@ -18,7 +19,7 @@ public interface RecordablePayload {
      *
      * @return Whether the payload should be recorded.
      */
-    public fun shouldRecord(): Boolean
+    public fun shouldRecord(recorder: ReplayRecorder): Boolean
 
     /**
      * Writes the custom payload data manually.

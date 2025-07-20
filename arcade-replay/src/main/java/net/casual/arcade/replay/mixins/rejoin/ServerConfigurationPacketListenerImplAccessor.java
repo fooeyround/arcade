@@ -13,9 +13,9 @@ import java.util.Queue;
 
 @Mixin(ServerConfigurationPacketListenerImpl.class)
 public interface ServerConfigurationPacketListenerImplAccessor {
-	@Accessor("configurationTasks")
-	Queue<ConfigurationTask> tasks();
+    @Accessor("configurationTasks")
+    Queue<ConfigurationTask> tasks();
 
-	@Accessor("currentTask")
-	void setCurrentTask(ConfigurationTask task);
+    @Accessor("currentTask")
+    void setCurrentTask(ConfigurationTask task);
 }

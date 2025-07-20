@@ -11,7 +11,7 @@ import java.util.Collection;
 
 @ApiStatus.Internal
 public interface PackTracker {
-	void replay$addPacks(Collection<ClientboundResourcePackPushPacket> packs);
+    void replay$addPacks(Collection<ClientboundResourcePackPushPacket> packs);
 
-	Collection<ClientboundResourcePackPushPacket> replay$getPacks();
+    Collection<ClientboundResourcePackPushPacket> replay$getPacks();
 }

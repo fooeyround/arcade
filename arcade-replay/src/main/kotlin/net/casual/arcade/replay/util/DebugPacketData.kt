@@ -15,6 +15,6 @@ public data class DebugPacketData(
     }
 
     public fun format(): String {
-        return "Type: ${this.type}, Size: ${net.casual.arcade.replay.util.FileUtils.formatSize(this.size)}, Count: ${this.count}"
+        return "Type: ${this.type}, Size: ${FileUtils.formatSize(this.size)}, Count: ${this.count}"
     }
 }

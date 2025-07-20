@@ -13,7 +13,7 @@ import java.util.List;
 
 @Mixin(ClientboundPlayerInfoUpdatePacket.class)
 public interface ClientboundPlayerInfoUpdatePacketAccessor {
-	@Mutable
-	@Accessor("entries")
-	void setEntries(List<ClientboundPlayerInfoUpdatePacket.Entry> entries);
+    @Mutable
+    @Accessor("entries")
+    void setEntries(List<ClientboundPlayerInfoUpdatePacket.Entry> entries);
 }

@@ -6,7 +6,6 @@ package net.casual.arcade.visuals.extensions
 
 import net.casual.arcade.events.GlobalEventHandler
 import net.casual.arcade.events.ListenerRegistry.Companion.register
-import net.casual.arcade.events.server.ServerLoadedEvent
 import net.casual.arcade.events.server.ServerStartEvent
 import net.casual.arcade.events.server.player.PlayerLeaveEvent
 import net.casual.arcade.events.server.player.PlayerTickEvent

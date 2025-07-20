@@ -4,7 +4,7 @@
  */
 package net.casual.arcade.replay.io
 
-import me.senseiwells.replay.ServerReplay
+import net.casual.arcade.utils.ArcadeUtils
 import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -22,7 +22,7 @@ public object ReplayModIO {
                 caches.deleteRecursively()
             }
         } catch (e: IOException) {
-            ServerReplay.logger.error("Failed to delete caches", e)
+            ArcadeUtils.logger.error("Failed to delete caches", e)
         }
     }
 }

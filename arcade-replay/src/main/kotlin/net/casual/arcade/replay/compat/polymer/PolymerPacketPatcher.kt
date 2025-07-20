@@ -13,7 +13,7 @@ internal object PolymerPacketPatcher {
     private val hasPolymer = FabricLoader.getInstance().isModLoaded("polymer-core")
 
     internal fun replace(listener: ServerCommonPacketListenerImpl, packet: Packet<*>): Packet<*> {
-        if (hasPolymer) {
+        if (this.hasPolymer) {
             return PacketPatcher.replace(listener, packet)
         }
         return packet

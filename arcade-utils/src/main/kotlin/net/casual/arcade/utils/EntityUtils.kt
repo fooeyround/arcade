@@ -115,6 +115,12 @@ public fun Entity.getServerEntity(): ServerEntity? {
     return tracked.getServerEntity()
 }
 
+public fun Entity.getTrackedEntity(): WrappedTrackedEntity? {
+    val map = (this.level() as ServerLevel).chunkSource.chunkMap as ChunkMapAccessor
+    val tracked = map.entityMap.get(this.id) ?: return null
+    return WrappedTrackedEntity(tracked)
+}
+
 public fun Entity.isInStructure(key: ResourceKey<Structure>): Boolean {
     val access = this.level().registryAccess()
     val structure = access.lookup(Registries.STRUCTURE).getOrNull()?.getOptional(key)?.getOrNull() ?: return false
@@ -139,12 +145,6 @@ public fun <T: Entity> EntityType<T>.spawn(
         entity.setYBodyRot(location.yRot)
     }
     return this.spawn(location.level, consumer, BlockPos.containing(location.position), reason, false, false)
-}
-
-private fun Entity.getTrackedEntity(): WrappedTrackedEntity? {
-    val map = (this.level() as ServerLevel).chunkSource.chunkMap as ChunkMapAccessor
-    val tracked = map.entityMap.get(this.id) ?: return null
-    return WrappedTrackedEntity(tracked)
 }
 
 public object SynchedDataUtils {
