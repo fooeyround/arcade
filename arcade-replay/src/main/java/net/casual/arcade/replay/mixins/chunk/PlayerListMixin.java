@@ -5,7 +5,7 @@
 package net.casual.arcade.replay.mixins.chunk;
 
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder;
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders;
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
 import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorder;
 import net.casual.arcade.replay.recorder.player.PlayerRecorders;
 import net.minecraft.core.BlockPos;
@@ -37,9 +37,7 @@ public class PlayerListMixin {
 		at = @At("HEAD")
 	)
 	private void onBroadcastAll(Packet<?> packet, CallbackInfo ci) {
-		for (ReplayChunkRecorder recorder : ChunkRecorders.recorders()) {
-			recorder.record(packet);
-		}
+		ReplayChunkRecorders.record(packet);
 	}
 
 	@Inject(
@@ -47,7 +45,7 @@ public class PlayerListMixin {
 		at = @At("HEAD")
 	)
 	private void onBroadcastAll(Packet<?> packet, ResourceKey<Level> dimension, CallbackInfo ci) {
-		for (ReplayChunkRecorder recorder : ChunkRecorders.recorders()) {
+		for (ReplayChunkRecorder recorder : ReplayChunkRecorders.recorders()) {
 			if (recorder.getLevel().dimension() == dimension) {
 				recorder.record(packet);
 			}
@@ -76,10 +74,8 @@ public class PlayerListMixin {
 		}
 
 		ChunkPos pos = new ChunkPos(BlockPos.containing(x, y, z));
-		for (ReplayChunkRecorder recorder : ChunkRecorders.recorders()) {
-			if (recorder.getChunks().contains(dimension, pos)) {
-				recorder.record(packet);
-			}
+		for (ReplayChunkRecorder recorder : ReplayChunkRecorders.containing(dimension, pos)) {
+			recorder.record(packet);
 		}
 	}
 
@@ -93,9 +89,7 @@ public class PlayerListMixin {
 		boolean bypassHiddenChat,
 		CallbackInfo ci
 	) {
-		for (ReplayChunkRecorder recorder : ChunkRecorders.recorders()) {
-			recorder.record(new ClientboundSystemChatPacket(serverMessage, bypassHiddenChat));
-		}
+		ReplayChunkRecorders.record(new ClientboundSystemChatPacket(serverMessage, bypassHiddenChat));
 	}
 
 	@Inject(
@@ -109,19 +103,17 @@ public class PlayerListMixin {
 		ChatType.Bound boundChatType,
 		CallbackInfo ci
 	) {
-		for (ReplayChunkRecorder recorder : ChunkRecorders.recorders()) {
-			if (message.isSystem()) {
-				recorder.record(new ClientboundDisguisedChatPacket(
-					message.decoratedContent(),
-					boundChatType
-				));
-				continue;
-			}
-			Component content = message.unsignedContent();
-			if (content == null) {
-				content = Component.literal(message.signedBody().content());
-			}
-			recorder.record(new ClientboundSystemChatPacket(boundChatType.decorate(content), false));
+		if (message.isSystem()) {
+			ReplayChunkRecorders.record(new ClientboundDisguisedChatPacket(
+				message.decoratedContent(),
+				boundChatType
+			));
+			return;
 		}
+		Component content = message.unsignedContent();
+		if (content == null) {
+			content = Component.literal(message.signedBody().content());
+		}
+		ReplayChunkRecorders.record(new ClientboundSystemChatPacket(boundChatType.decorate(content), false));
 	}
 }

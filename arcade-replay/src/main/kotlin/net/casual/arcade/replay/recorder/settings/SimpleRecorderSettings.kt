@@ -4,11 +4,13 @@
  */
 package net.casual.arcade.replay.recorder.settings
 
+import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.util.io.FileSize
 import kotlin.time.Duration
 
 public data class SimpleRecorderSettings(
     override val debug: Boolean = false,
+    override val format: ReplayFormat = ReplayFormat.ReplayMod,
     override val worldName: String = "World",
     override val serverName: String = "Server",
     override val fixedDaylightCycle: Long = -1,

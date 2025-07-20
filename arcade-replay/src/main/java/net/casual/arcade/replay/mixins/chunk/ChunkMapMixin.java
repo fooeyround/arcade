@@ -7,7 +7,7 @@ package net.casual.arcade.replay.mixins.chunk;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecordable;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder;
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders;
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
@@ -42,7 +42,7 @@ public class ChunkMapMixin {
 		CallbackInfoReturnable<ChunkHolder> cir
 	) {
 		ChunkPos pos = holder.getPos();
-		for (ReplayChunkRecorder recorder : ChunkRecorders.containing(this.level.dimension(), pos)) {
+		for (ReplayChunkRecorder recorder : ReplayChunkRecorders.containing(this.level.dimension(), pos)) {
 			((ReplayChunkRecordable) holder).addRecorder(recorder);
 		}
 	}

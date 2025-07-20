@@ -79,7 +79,7 @@ public abstract class ReplayRecorder(
     private var ignore = false
 
     @Suppress("LeakingThis")
-    protected val saver: ReplayWriter = provider.invoke(this)
+    protected val writer: ReplayWriter = provider.invoke(this)
 
     /**
      * The directory at which all the temporary replay
@@ -87,20 +87,20 @@ public abstract class ReplayRecorder(
      * This also determines the final location of the replay file.
      */
     public val location: Path
-        get() = this.saver.path
+        get() = this.writer.path
 
     /**
      * Whether the replay recorder has stopped and
      * is no longer recording any packets.
      */
     public val stopped: Boolean
-        get() = this.saver.closed
+        get() = this.writer.closed
 
     /**
      * The number of markers the replay has recorded.
      */
     public val markers: Int
-        get() = this.saver.markers
+        get() = this.writer.markers
 
     /**
      * Whether the recorder is currently paused
@@ -165,7 +165,7 @@ public abstract class ReplayRecorder(
             }
             return
         }
-        if (this.saver.prePacketRecord(outgoing)) {
+        if (this.writer.prePacketRecord(outgoing)) {
             return
         }
         if (!this.canRecordPacket(outgoing)) {
@@ -176,14 +176,14 @@ public abstract class ReplayRecorder(
         val timestamp = this.getTimestamp()
         this.lastPacket = timestamp
 
-        this.saver.writePacket(outgoing, protocol, timestamp, !safe).thenApply { bytes ->
+        this.writer.writePacket(outgoing, protocol, timestamp, !safe).thenApply { bytes ->
             if (this.settings.debug && bytes != null) {
                 val type = outgoing.getDebugName()
                 this.packets.getOrPut(type) { DebugPacketData(type, 0, 0) }.increment(bytes)
             }
         }
 
-        this.saver.postPacketRecord(outgoing)
+        this.writer.postPacketRecord(outgoing)
         this.checkRecordingStatus()
     }
 
@@ -212,7 +212,7 @@ public abstract class ReplayRecorder(
     @JvmOverloads
     public fun onStart(mode: StartingMode = StartingMode.Start) {
         GlobalEventHandler.Server.broadcast(ReplayRecorderStartEvent(this, mode))
-        this.saver.broadcastToOpsAndConsole("${mode.getContinuousVerb()} replay for ${this.getName()}")
+        this.writer.broadcastToOpsAndConsole("${mode.getContinuousVerb()} replay for ${this.getName()}")
     }
 
     /**
@@ -232,11 +232,11 @@ public abstract class ReplayRecorder(
         }
 
         if (this.settings.debug) {
-            this.saver.broadcastToOpsAndConsole("Replay ${this.getName()} Debug Packet Data:\n${this.getDebugPacketData()}")
+            this.writer.broadcastToOpsAndConsole("Replay ${this.getName()} Debug Packet Data:\n${this.getDebugPacketData()}")
         }
 
         // We only save if the player has actually logged in...
-        val future = this.saver.close(this.lastPacket, save && this.protocol.id() == ConnectionProtocol.PLAY)
+        val future = this.writer.close(this.lastPacket, save && this.protocol.id() == ConnectionProtocol.PLAY)
         this.onClosing(future)
 
         GlobalEventHandler.Server.broadcast(ReplayRecorderStopEvent(this, future))
@@ -268,7 +268,7 @@ public abstract class ReplayRecorder(
      * @param marker The marker to add.
      */
     public fun addMarker(marker: ReplayMarker) {
-        this.saver.writeMarker(marker)
+        this.writer.writeMarker(marker)
     }
 
     /**
@@ -289,7 +289,7 @@ public abstract class ReplayRecorder(
      * @return The raw file size of the replay in bytes.
      */
     public fun getRawRecordingSize(): Long {
-        return this.saver.getRawRecordingSize()
+        return this.writer.getRawRecordingSize()
     }
 
     /**
@@ -360,7 +360,7 @@ public abstract class ReplayRecorder(
     }
 
     protected fun spawnPlayer(player: ServerPlayer, packets: Collection<Packet<*>>) {
-        this.saver.writePlayer(player, packets)
+        this.writer.writePlayer(player, packets)
     }
 
     /**
@@ -451,7 +451,7 @@ public abstract class ReplayRecorder(
 
     @Internal
     public fun tick() {
-        this.saver.tick()
+        this.writer.tick()
     }
 
     /**
@@ -502,7 +502,7 @@ public abstract class ReplayRecorder(
         if (maxDuration.isPositive()) {
             if (this.getTimestamp() > maxDuration) {
                 this.stop(true)
-                this.saver.broadcastToOpsAndConsole(
+                this.writer.broadcastToOpsAndConsole(
                     "Stopped recording replay for ${this.getName()}, past duration limit ${maxDuration}!"
                 )
                 if (this.settings.restartAfterMaxRecordingDuration) {
@@ -516,7 +516,7 @@ public abstract class ReplayRecorder(
         if (maxFileSize.bytes > 0) {
             if (this.getRawRecordingSize() > maxFileSize.bytes) {
                 this.stop(true)
-                this.saver.broadcastToOpsAndConsole(
+                this.writer.broadcastToOpsAndConsole(
                     "Stopped recording replay for ${this.getName()}, past file size limit ${maxDuration}!"
                 )
                 if (this.settings.restartAfterMaxRawRecordingFileSize) {

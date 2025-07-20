@@ -36,7 +36,7 @@ public class MinecraftServerMixin {
 		)
 	)
 	private void onServerLoaded(CallbackInfo ci) {
-		ServerLoadedEvent event = new ServerLoadedEvent((MinecraftServer) (Object) this);
+		ServerStartEvent event = new ServerStartEvent((MinecraftServer) (Object) this);
 		GlobalEventHandler.Server.broadcast(event);
 	}
 
@@ -75,8 +75,20 @@ public class MinecraftServerMixin {
 		at = @At("HEAD")
 	)
 	private void onShutdown(CallbackInfo ci) {
-		ServerStoppingEvent event = new ServerStoppingEvent((MinecraftServer) (Object) this);
-		GlobalEventHandler.Server.broadcast(event);
+		ServerStoppingEvent old = new ServerStoppingEvent((MinecraftServer) (Object) this);
+		GlobalEventHandler.Server.broadcast(old);
+
+		ServerStopEvent event = new ServerStopEvent((MinecraftServer) (Object) this);
+		GlobalEventHandler.Server.broadcast(event, BuiltInEventPhases.PRE_PHASES);
+	}
+
+	@Inject(
+		method = "stopServer",
+		at = @At("TAIL")
+	)
+	private void onServerStopped(CallbackInfo ci) {
+		ServerStopEvent event = new ServerStopEvent((MinecraftServer) (Object) this);
+		GlobalEventHandler.Server.broadcast(event, BuiltInEventPhases.POST_PHASES);
 	}
 
 	@Inject(

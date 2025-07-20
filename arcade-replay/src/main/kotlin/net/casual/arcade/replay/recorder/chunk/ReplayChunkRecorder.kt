@@ -9,7 +9,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.casual.arcade.events.GlobalEventHandler
 import net.casual.arcade.replay.recorder.ChunkSender
 import net.casual.arcade.replay.compat.polymer.PolymerPacketPatcher
+import net.casual.arcade.replay.events.chunk.ReplayChunkRecorderPauseEvent
 import net.casual.arcade.replay.events.chunk.ReplayChunkRecorderSnapshotEvent
+import net.casual.arcade.replay.events.chunk.ReplayChunkRecorderUnpauseEvent
 import net.casual.arcade.replay.io.writer.ReplayWriter
 import net.casual.arcade.replay.mixins.chunk.WitherBossAccessor
 import net.casual.arcade.replay.mixins.rejoin.ChunkMapAccessor
@@ -154,13 +156,13 @@ public class ReplayChunkRecorder internal constructor(
      * @return Whether it successfully restarted.
      */
     override fun restart(): Boolean {
-        val recorder = ChunkRecorders.create(this.chunks, this.recorderName)
+        val recorder = ReplayChunkRecorders.create(this.chunks, this.writer.path, this.settings, this.recorderName)
         return recorder.start(StartingMode.Restart)
     }
 
     /**
      * This gets called when the replay is closing. It removes all [ReplayChunkRecordable]s
-     * and updates the [ChunkRecorders] manager.
+     * and updates the [ReplayChunkRecorders] manager.
      *
      * @param future The future that will complete once the replay has closed.
      */
@@ -173,7 +175,7 @@ public class ReplayChunkRecorder internal constructor(
             ArcadeUtils.logger.warn("Failed to unlink all chunk recordables")
         }
 
-        ChunkRecorders.close(this.server, this, future)
+        ReplayChunkRecorders.close(this.server, this, future)
     }
 
     /**
@@ -322,7 +324,7 @@ public class ReplayChunkRecorder internal constructor(
     override fun takeSnapshot() {
         RejoinedReplayPlayer.rejoin(this.dummy, this)
         this.sendChunkViewDistance()
-        this.sendChunks(ChunkSender.SeenEntities.all()) { pos -> this.saver.writeCachedChunk(pos) }
+        this.sendChunks(ChunkSender.SeenEntities.all()) { pos -> this.writer.writeCachedChunk(pos) }
         for (recordable in this.recordables) {
             recordable.resendPackets(this)
         }
@@ -389,7 +391,7 @@ public class ReplayChunkRecorder internal constructor(
             return
         }
 
-        if (chunk != null && this.saver.cacheChunksOnUnload) {
+        if (chunk != null && this.writer.cacheChunksOnUnload) {
             val packet = ClientboundLevelChunkWithLightPacket(
                 chunk, this.level.lightEngine, null, null
             )
@@ -407,15 +409,7 @@ public class ReplayChunkRecorder internal constructor(
         if (!this.paused && this.settings.skipWhenChunksUnloaded) {
             this.lastPaused = System.currentTimeMillis().milliseconds
 
-            // TODO:
-//            if (this.settings.notifyPlayersLoadingChunks) {
-//                this.ignore {
-//                    this.server.playerList.broadcastSystemMessage(
-//                        Component.literal("Paused recording for ${this.getName()}, chunks were unloaded"),
-//                        false
-//                    )
-//                }
-//            }
+            GlobalEventHandler.Server.broadcast(ReplayChunkRecorderPauseEvent(this))
         }
     }
 
@@ -424,15 +418,7 @@ public class ReplayChunkRecorder internal constructor(
             this.totalPausedTime += this.getCurrentPause()
             this.lastPaused = Duration.ZERO
 
-            // TODO:
-//            if (ServerReplay.config.notifyPlayersLoadingChunks) {
-//                this.ignore {
-//                    this.server.playerList.broadcastSystemMessage(
-//                        Component.literal("Resumed recording for ${this.getName()}, chunks were loaded"),
-//                        false
-//                    )
-//                }
-//            }
+            GlobalEventHandler.Server.broadcast(ReplayChunkRecorderUnpauseEvent(this))
         }
     }
 

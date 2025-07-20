@@ -16,7 +16,7 @@ import de.maxhenkel.voicechat.net.*
 import de.maxhenkel.voicechat.plugins.impl.VolumeCategoryImpl
 import me.senseiwells.replay.ServerReplay
 import net.casual.arcade.replay.recorder.ReplayRecorder
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders
 import net.casual.arcade.replay.recorder.player.PlayerRecorders
 import net.casual.arcade.utils.PlayerUtils.levelServer
 import net.minecraft.network.FriendlyByteBuf
@@ -159,7 +159,7 @@ public object ReplayVoicechatPlugin: VoicechatPlugin {
             if (!inGroup) {
                 val dimension = player.level().dimension()
                 val chunkPos = player.chunkPosition()
-                for (recorder in ChunkRecorders.containing(dimension, chunkPos)) {
+                for (recorder in ReplayChunkRecorders.containing(dimension, chunkPos)) {
                     recorder.record(lazyEntityPacket.value)
                 }
             }
@@ -172,7 +172,7 @@ public object ReplayVoicechatPlugin: VoicechatPlugin {
             val category = event.volumeCategory
             if (category is VolumeCategoryImpl) {
                 val packet = AddCategoryPacket(category).toClientboundPacket()
-                for (recorder in ChunkRecorders.recorders()) {
+                for (recorder in ReplayChunkRecorders.recorders()) {
                     recorder.record(packet)
                 }
             }
@@ -183,7 +183,7 @@ public object ReplayVoicechatPlugin: VoicechatPlugin {
         val server = Voicechat.SERVER.server?.server ?: return
         server.execute {
             val packet = RemoveCategoryPacket(event.volumeCategory.id).toClientboundPacket()
-            for (recorder in ChunkRecorders.recorders()) {
+            for (recorder in ReplayChunkRecorders.recorders()) {
                 recorder.record(packet)
             }
         }
@@ -196,7 +196,7 @@ public object ReplayVoicechatPlugin: VoicechatPlugin {
             val state = voicechat.playerStateManager.getState(event.playerUuid)
             if (state != null) {
                 val packet = PlayerStatePacket(state).toClientboundPacket()
-                for (recorder in ChunkRecorders.recorders()) {
+                for (recorder in ReplayChunkRecorders.recorders()) {
                     recorder.record(packet)
                 }
             }

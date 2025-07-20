@@ -7,8 +7,8 @@ package net.casual.arcade.replay.recorder.player
 import com.mojang.authlib.GameProfile
 import me.senseiwells.replay.ServerReplay
 import net.casual.arcade.replay.recorder.rejoin.RejoinedReplayPlayer
-import net.casual.arcade.utils.PlayerUtils.levelServer
 import net.casual.arcade.replay.util.processor.RecorderRecoverer
+import net.casual.arcade.utils.PlayerUtils.levelServer
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import java.util.*

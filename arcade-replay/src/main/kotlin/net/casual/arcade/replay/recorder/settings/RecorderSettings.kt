@@ -6,11 +6,14 @@ package net.casual.arcade.replay.recorder.settings
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
+import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.util.io.FileSize
 import kotlin.time.Duration
 
 public interface RecorderSettings {
     public val debug: Boolean
+
+    public val format: ReplayFormat
 
     public val worldName: String
     public val serverName: String

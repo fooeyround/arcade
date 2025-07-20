@@ -6,7 +6,7 @@ package net.casual.arcade.replay.mixins.common;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder;
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders;
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
 import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorder;
 import net.casual.arcade.replay.recorder.player.PlayerRecorders;
 import net.minecraft.core.BlockPos;
@@ -69,7 +69,7 @@ public abstract class ServerLevelMixin extends Level {
 		 }
 
 		 ChunkPos chunkPos = new ChunkPos(pos);
-		 for (ReplayChunkRecorder recorder : ChunkRecorders.containing(this.dimension(), chunkPos)) {
+		 for (ReplayChunkRecorder recorder : ReplayChunkRecorders.containing(this.dimension(), chunkPos)) {
 			 recorder.record(new ClientboundBlockDestructionPacket(breakerId, pos, progress));
 		 }
 	}
@@ -96,7 +96,7 @@ public abstract class ServerLevelMixin extends Level {
 		@Local(ordinal = 2) ParticleOptions particles
 	) {
 		ChunkPos chunkPos = new ChunkPos(BlockPos.containing(posX, posY, posZ));
-		for (ReplayChunkRecorder recorder : ChunkRecorders.containing(this.dimension(), chunkPos)) {
+		for (ReplayChunkRecorder recorder : ReplayChunkRecorders.containing(this.dimension(), chunkPos)) {
 			recorder.record(new ClientboundExplodePacket(pos, Optional.empty(), particles, sound));
 		}
 	}
@@ -121,7 +121,7 @@ public abstract class ServerLevelMixin extends Level {
 		@Local ClientboundLevelParticlesPacket packet
 	) {
 		ChunkPos chunkPos = new ChunkPos(BlockPos.containing(posX, posY, posZ));
-		for (ReplayChunkRecorder recorder : ChunkRecorders.containing(this.dimension(), chunkPos)) {
+		for (ReplayChunkRecorder recorder : ReplayChunkRecorders.containing(this.dimension(), chunkPos)) {
 			recorder.record(packet);
 		}
 	}

@@ -10,6 +10,7 @@ import net.casual.arcade.events.GlobalEventHandler
 import net.casual.arcade.events.ListenerRegistry.Companion.register
 import net.casual.arcade.events.server.ServerLoadedEvent
 import net.casual.arcade.events.server.ServerSaveEvent
+import net.casual.arcade.events.server.ServerStartEvent
 import net.casual.arcade.events.server.ServerTickEvent
 import net.casual.arcade.utils.ArcadeUtils
 import net.casual.arcade.utils.codec.ArcadeExtraCodecs
@@ -122,7 +123,7 @@ public object LevelPersistenceTracker {
         GlobalEventHandler.Server.register<ServerSaveEvent> { (server) ->
             this.writeLevelKeysTo(this.getPersistenceDataPath(server), this.persistent.toList())
         }
-        GlobalEventHandler.Server.register<ServerLoadedEvent> { (server) ->
+        GlobalEventHandler.Server.register<ServerStartEvent> { (server) ->
             this.cleanupTemporaryLevels(server)
         }
         GlobalEventHandler.Server.register<ServerTickEvent> { (server) ->

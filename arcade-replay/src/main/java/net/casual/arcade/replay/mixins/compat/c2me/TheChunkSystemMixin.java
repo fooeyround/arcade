@@ -11,7 +11,7 @@ import com.ishland.flowsched.scheduler.ItemStatus;
 import net.casual.arcade.replay.mixins.rejoin.ChunkMapAccessor;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecordable;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder;
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders;
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
@@ -46,7 +46,7 @@ public abstract class TheChunkSystemMixin extends DaemonizedStatusAdvancingSched
     ) {
         ServerLevel level = ((ChunkMapAccessor) this.tacs).getLevel();
         level.getServer().execute(() -> {
-            for (ReplayChunkRecorder recorder : ChunkRecorders.containing(level.dimension(), holder.getKey())) {
+            for (ReplayChunkRecorder recorder : ReplayChunkRecorders.containing(level.dimension(), holder.getKey())) {
                 ((ReplayChunkRecordable) holder.getUserData().get()).addRecorder(recorder);
             }
         });

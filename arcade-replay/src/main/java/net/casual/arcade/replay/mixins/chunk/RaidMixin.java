@@ -8,7 +8,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.casual.arcade.utils.MathUtils;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecordable;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder;
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders;
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerBossEvent;
@@ -38,7 +38,7 @@ public class RaidMixin {
 	)
 	private void onUpdate(ServerLevel level, CallbackInfo ci) {
 		BoundingBox box = MathUtils.createBoundingBox(this.center, 96);
-		ChunkRecorders.updateRecordable((ReplayChunkRecordable) this.raidEvent, level.dimension(), box);
+		ReplayChunkRecorders.updateRecordable((ReplayChunkRecordable) this.raidEvent, level.dimension(), box);
 	}
 
 	@Inject(

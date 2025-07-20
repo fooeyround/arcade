@@ -6,7 +6,7 @@ package net.casual.arcade.replay.mixins.chunk;
 
 import net.casual.arcade.replay.ducks.ChunkRecordable;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder;
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders;
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
@@ -52,7 +52,7 @@ public class TrackedEntityMixin implements ChunkRecordable {
 	private void onUpdate(List<ServerPlayer> playersList, CallbackInfo ci) {
 		ChunkPos pos = this.entity.chunkPosition();
 		ResourceKey<Level> level = this.entity.level().dimension();
-		ChunkRecorders.updateRecordable(this, level, pos);
+		ReplayChunkRecorders.updateRecordable(this, level, pos);
 	}
 
 	@Inject(

@@ -13,7 +13,7 @@ package net.casual.arcade.replay.recorder.chunk
  * recorded by that recorder.
  *
  * In order to update the recorders that are able to record this
- * object you should call [ChunkRecorders.updateRecordable] to
+ * object you should call [ReplayChunkRecorders.updateRecordable] to
  * add and remove any [ReplayChunkRecorder]s as necessary.
  *
  * For example:
@@ -38,7 +38,7 @@ package net.casual.arcade.replay.recorder.chunk
  * ```
  *
  * @see ReplayChunkRecorder
- * @see ChunkRecorders.updateRecordable
+ * @see ReplayChunkRecorders.updateRecordable
  */
 public interface ReplayChunkRecordable {
     /**

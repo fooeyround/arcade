@@ -6,7 +6,7 @@ package net.casual.arcade.replay.mixins.chunk;
 
 import net.casual.arcade.utils.MathUtils;
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecordable;
-import net.casual.arcade.replay.recorder.chunk.ChunkRecorders;
+import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -33,6 +33,6 @@ public class EndDragonFightMixin {
 	)
 	private void onUpdate(CallbackInfo ci) {
 		BoundingBox box = MathUtils.createBoundingBox(this.origin, 192);
-		ChunkRecorders.updateRecordable((ReplayChunkRecordable) this.dragonEvent, this.level.dimension(), box);
+		ReplayChunkRecorders.updateRecordable((ReplayChunkRecordable) this.dragonEvent, this.level.dimension(), box);
 	}
 }
