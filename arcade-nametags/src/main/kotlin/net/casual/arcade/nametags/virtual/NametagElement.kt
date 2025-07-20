@@ -147,10 +147,6 @@ public class NametagElement(
         element.billboardMode = Display.BillboardConstraints.CENTER
         element.translation = Vector3f(0.0F, -0.2F, 0.0F)
         element.isInvisible = true
-
-        // We spawn the entity so low that the lerp animation
-        // happens so fast it's basically instant
-        element.offset = Vec3(0.0, -500.0, 0.0)
     }
 
     private fun sendDirtyPackets() {
@@ -174,7 +170,9 @@ public class NametagElement(
 
     private class NametagTextElement(private val entity: Entity): TextDisplayElement() {
         override fun startWatching(player: ServerPlayer, packetConsumer: Consumer<Packet<ClientGamePacketListener>>) {
-            this.lastSyncedPos = this.entity.position()
+            // We spawn the entity so low that the lerp animation
+            // happens so fast it's basically instant
+            this.lastSyncedPos = this.entity.position().add(Vec3(0.0, -500.0, 0.0))
             super.startWatching(player, packetConsumer)
         }
     }
