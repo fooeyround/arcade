@@ -1,3 +1,8 @@
+plugins {
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.explosion)
+}
+
 val shade: Configuration by configurations.creating
 
 val moduleDependencies: (Project, List<String>) -> Unit by project
@@ -17,6 +22,11 @@ dependencies {
 
 loom {
     accessWidenerPath.set(file("src/main/resources/arcade-replay.accesswidener"))
+}
+
+components {
+    val component = getByName<AdhocComponentWithVariants>("java")
+    component.withVariantsFromConfiguration(configurations.shadowRuntimeElements.get()) { skip() }
 }
 
 tasks {

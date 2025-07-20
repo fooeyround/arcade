@@ -10,7 +10,6 @@ import net.casual.arcade.events.GlobalEventHandler
 import net.casual.arcade.events.ListenerRegistry
 import net.casual.arcade.events.ListenerRegistry.Companion.register
 import net.casual.arcade.events.SimpleListenerRegistry
-import net.casual.arcade.events.server.ServerLoadedEvent
 import net.casual.arcade.events.server.ServerStartEvent
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack

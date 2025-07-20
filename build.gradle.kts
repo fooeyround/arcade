@@ -7,8 +7,6 @@ plugins {
     kotlin("plugin.serialization").version(jvmVersion)
     alias(libs.plugins.fabric.loom)
     alias(libs.plugins.spotless)
-    alias(libs.plugins.shadow)
-    alias(libs.plugins.explosion)
     `maven-publish`
     java
 }
@@ -21,8 +19,6 @@ allprojects {
     apply(plugin = "fabric-loom")
     apply(plugin = "maven-publish")
     apply(plugin = "com.diffplug.spotless")
-    apply(plugin = "com.gradleup.shadow")
-    apply(plugin = "lol.bai.explosion")
 
     val libs = rootProject.libs
 
@@ -83,7 +79,9 @@ allprojects {
         }
 
         jar {
-            from("LICENSE")
+            from(rootProject.file("LICENSE")) {
+                rename { "arcade-LICENSE" }
+            }
         }
     }
 
