@@ -6,6 +6,7 @@ package net.casual.arcade.utils
 
 import net.casual.arcade.util.mixins.ChunkMapAccessor
 import net.casual.arcade.util.mixins.TrackedEntityAccessor
+import net.casual.arcade.utils.impl.WrappedTrackedEntity
 import net.casual.arcade.utils.math.location.Location
 import net.casual.arcade.utils.math.location.LocationWithLevel
 import net.minecraft.core.BlockPos
@@ -106,12 +107,12 @@ public fun Entity.teleportTo(location: Location, resetCamera: Boolean = true) {
 
 public fun Entity.getTrackingPlayers(): List<ServerPlayer> {
     val tracked = this.getTrackedEntity() ?: return listOf()
-    return (tracked as TrackedEntityAccessor).seenBy.map { it.player }
+    return tracked.getObservers().map { it.player }
 }
 
 public fun Entity.getServerEntity(): ServerEntity? {
     val tracked = this.getTrackedEntity() ?: return null
-    return (tracked as TrackedEntityAccessor).serverEntity
+    return tracked.getServerEntity()
 }
 
 public fun Entity.isInStructure(key: ResourceKey<Structure>): Boolean {
@@ -140,8 +141,10 @@ public fun <T: Entity> EntityType<T>.spawn(
     return this.spawn(location.level, consumer, BlockPos.containing(location.position), reason, false, false)
 }
 
-private fun Entity.getTrackedEntity(): ChunkMap.TrackedEntity? {
-    return ((this.level() as ServerLevel).chunkSource.chunkMap as ChunkMapAccessor).entityMap.get(this.id)
+private fun Entity.getTrackedEntity(): WrappedTrackedEntity? {
+    val map = (this.level() as ServerLevel).chunkSource.chunkMap as ChunkMapAccessor
+    val tracked = map.entityMap.get(this.id) ?: return null
+    return WrappedTrackedEntity(tracked)
 }
 
 public object SynchedDataUtils {

@@ -7,6 +7,8 @@ plugins {
     kotlin("plugin.serialization").version(jvmVersion)
     alias(libs.plugins.fabric.loom)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.explosion)
     `maven-publish`
     java
 }
@@ -19,6 +21,8 @@ allprojects {
     apply(plugin = "fabric-loom")
     apply(plugin = "maven-publish")
     apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "com.gradleup.shadow")
+    apply(plugin = "lol.bai.explosion")
 
     val libs = rootProject.libs
 
@@ -28,12 +32,15 @@ allprojects {
     repositories {
         mavenLocal()
         maven("https://maven.supersanta.me/snapshots")
+        maven("https://masa.dy.fi/maven")
         maven("https://maven.parchmentmc.org/")
+        maven("https://repo.viaversion.com")
         maven("https://jitpack.io")
         maven("https://api.modrinth.com/maven")
         maven("https://maven.nucleoid.xyz")
         maven("https://maven.maxhenkel.de/repository/public")
         maven("https://maven.andante.dev/releases/")
+        maven("https://maven4.bai.lol")
         mavenCentral()
     }
 
@@ -60,11 +67,11 @@ allprojects {
 
     tasks {
         processResources {
-            inputs.property("version", version)
+            inputs.property("version", modVersion)
             filesMatching("fabric.mod.json") {
                 val minecraftDependency = libs.versions.minecraft.get().replaceAfterLast('.', "x")
                 expand(mutableMapOf(
-                    "version" to version,
+                    "version" to modVersion,
                     "minecraft_dependency" to minecraftDependency,
                     "fabric_loader_dependency" to libs.versions.fabric.loader.get(),
                     "fabric_api_dependency" to libs.versions.fabric.api.get(),
