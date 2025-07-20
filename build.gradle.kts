@@ -188,6 +188,10 @@ private fun Project.updateDocumentedDependencies(path: String, transitive: Boole
         val dependencies = configurations.api.get().dependencies.toMutableSet()
         dependencies.addAll(configurations.modApi.get().dependencies)
         dependencies.removeAll(configurations.include.get().dependencies)
+        val shade = configurations.findByName("shade")
+        if (shade != null) {
+            dependencies.removeAll(shade.dependencies)
+        }
         if (dependencies.isNotEmpty()) {
             dependencies.sortedBy { "${it.group}:${it.name}" }.joinTo(builder, "\n", "\n\n") {
                 """    include(modImplementation("${it.group}:${it.name}:${it.version}")!!)"""
