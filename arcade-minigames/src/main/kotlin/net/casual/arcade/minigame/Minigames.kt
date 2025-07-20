@@ -16,6 +16,7 @@ import net.casual.arcade.minigame.commands.ExtendedGameModeCommand
 import net.casual.arcade.minigame.commands.MinigameCommand
 import net.casual.arcade.minigame.commands.PauseCommand
 import net.casual.arcade.minigame.commands.TeamCommandModifier
+import net.casual.arcade.minigame.compat.MinigamesReplayCompat
 import net.casual.arcade.minigame.exception.MinigameCreationException
 import net.casual.arcade.minigame.exception.MinigameSerializationException
 import net.casual.arcade.minigame.extensions.PlayerMovementRestrictionExtension
@@ -130,7 +131,7 @@ public object Minigames: ModInitializer {
     public fun write(path: Path, minigame: Minigame) {
         val json = JsonObject()
         val factory = minigame.internalFactory() ?:
-            throw MinigameSerializationException("Minigame ${minigame.id} is not serializable")
+        throw MinigameSerializationException("Minigame ${minigame.id} is not serializable")
 
         val encoded = MinigameFactory.CODEC.encodeStart(JsonOps.INSTANCE, factory).getOrThrow { message ->
             MinigameSerializationException("Failed to serialize minigame factory for ${minigame.id}: $message")
@@ -150,6 +151,7 @@ public object Minigames: ModInitializer {
 
     override fun onInitialize() {
         MinigameRegistries.load()
+        MinigamesReplayCompat.registerEvents()
         MinigameUtils.registerEvents()
         ExtendedGameMode.registerEvents()
         PlayerMovementRestrictionExtension.registerEvents()
