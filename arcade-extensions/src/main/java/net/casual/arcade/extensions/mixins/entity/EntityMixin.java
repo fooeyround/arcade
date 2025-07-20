@@ -5,16 +5,14 @@
 package net.casual.arcade.extensions.mixins.entity;
 
 import net.casual.arcade.events.GlobalEventHandler;
-import net.casual.arcade.extensions.Extension;
-import net.casual.arcade.extensions.ExtensionHolder;
-import net.casual.arcade.extensions.ExtensionMap;
-import net.casual.arcade.extensions.TransferableEntityExtension;
+import net.casual.arcade.extensions.*;
 import net.casual.arcade.extensions.TransferableEntityExtension.TransferReason;
 import net.casual.arcade.extensions.event.EntityExtensionEvent;
 import net.casual.arcade.utils.ArcadeUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -39,7 +37,7 @@ public class EntityMixin implements ExtensionHolder {
         CallbackInfo ci
     ) {
         Entity entity = (Entity) (Object) this;
-        if (entity instanceof ServerPlayer) {
+        if (entity instanceof Player || !EntityExtension.SHOULD_ATTACH_EXTENSION.get()) {
             return;
         }
         this.arcade$extensions = new ExtensionMap();
