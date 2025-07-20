@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3
 import java.util.function.Consumer
 
 public open class NametagElementHolder(
-    private val entity: Entity
+    protected val entity: Entity
 ): ElementHolder() {
     private val nametags = Reference2ReferenceLinkedOpenHashMap<Nametag, NametagElement>()
     private val watching = Reference2ObjectLinkedOpenHashMap<ServerGamePacketListenerImpl, MutableSet<NametagElement>>()
