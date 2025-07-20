@@ -359,7 +359,6 @@ public abstract class ReplayRecorder(
         }
         meta.add("mods", mods)
 
-        meta.addProperty("version", ArcadeUtils.version)
         meta.add("settings", this.settings.asJson())
 
         for (provider in this.metaProviders) {

@@ -79,6 +79,10 @@ public class EntityMixin implements ExtensionHolder {
         at = @At("HEAD")
     )
     private void onRestoreEntity(Entity entity, CallbackInfo ci) {
+        if (entity instanceof ServerPlayer) {
+            return;
+        }
+
         for (Extension extension : ExtensionHolder.all((ExtensionHolder) entity)) {
             if (extension instanceof TransferableEntityExtension transferable) {
                 TransferReason reason = TransferReason.Other;

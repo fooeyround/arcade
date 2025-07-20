@@ -6,20 +6,17 @@ package net.casual.arcade.replay.io.writer.flashback
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToStream
-import net.casual.arcade.replay.util.flashback.FlashbackAction
 import net.casual.arcade.replay.recorder.settings.RecorderSettings
+import net.casual.arcade.replay.util.flashback.FlashbackAction
 import net.casual.arcade.replay.util.flashback.FlashbackMarker
 import net.casual.arcade.replay.util.flashback.FlashbackMeta
+import net.casual.arcade.utils.JsonUtils
 import net.minecraft.core.RegistryAccess
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.RegistryFriendlyByteBuf
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.io.path.*
 
 public class FlashbackChunkedWriter(
@@ -113,9 +110,8 @@ public class FlashbackChunkedWriter(
             meta.moveTo(meta.resolveSibling(net.casual.arcade.replay.io.FlashbackIO.METADATA_OLD), true)
         }
 
-        @OptIn(ExperimentalSerializationApi::class)
-        meta.outputStream().use {
-            Json.encodeToStream(this.meta, it)
+        meta.writer().use {
+            JsonUtils.encodeWith(FlashbackMeta.CODEC, this.meta, it)
         }
 
         this.snapshot = SnapshotState.Empty

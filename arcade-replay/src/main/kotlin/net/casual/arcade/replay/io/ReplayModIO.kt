@@ -11,7 +11,7 @@ import kotlin.io.path.*
 
 public object ReplayModIO {
     public fun isReplayFile(location: Path): Boolean {
-        return location.extension == "mcpr"
+        return location.isRegularFile() && location.extension == "mcpr"
     }
 
     public fun deleteCaches(location: Path) {

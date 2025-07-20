@@ -9,18 +9,13 @@ import net.casual.arcade.events.BuiltInEventPhases
 import net.casual.arcade.events.GlobalEventHandler
 import net.casual.arcade.replay.events.ReplayRecorderCloseEvent
 import net.casual.arcade.replay.events.ReplayRecorderSaveEvent
-import net.casual.arcade.replay.recorder.packet.RecordablePayload
 import net.casual.arcade.replay.mixins.network.IdDispatchCodecAccessor
 import net.casual.arcade.replay.recorder.ReplayRecorder
-import net.casual.arcade.replay.util.FileUtils
+import net.casual.arcade.replay.recorder.packet.RecordablePayload
 import net.casual.arcade.replay.util.ReplayMarker
 import net.casual.arcade.utils.ArcadeUtils
-import net.minecraft.ChatFormatting
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.ProtocolInfo
-import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.PacketType
@@ -30,6 +25,9 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.ChunkPos
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.fileSize
 import kotlin.time.Duration
 
@@ -80,10 +78,22 @@ public interface ReplayWriter {
     public fun close(duration: Duration, save: Boolean): CompletableFuture<Long>
 
     public companion object {
+        private val EXECUTOR_NUMBER = AtomicInteger()
+
         public const val ENTRY_ARCADE_REPLAY_META: String = "arcade_replay_meta.json"
 
         public val ReplayWriter.name: String
             get() = this.recorder.getName()
+
+        public fun createExecutor(): ExecutorService {
+            return Executors.newSingleThreadExecutor { task ->
+                val thread = Thread(task, "replay-writer-${EXECUTOR_NUMBER.incrementAndGet()}")
+                thread.setUncaughtExceptionHandler { _, e ->
+                    ArcadeUtils.logger.error("Uncaught exception while writing replay", e)
+                }
+                thread
+            }
+        }
 
         public fun encodePacket(packet: Packet<*>, protocol: ProtocolInfo<*>, buf: FriendlyByteBuf) {
             @Suppress("UNCHECKED_CAST")

@@ -182,7 +182,7 @@ public object ReplayViewerCommands {
 
     private fun jumpTo(context: CommandContext<CommandSourceStack>): Int {
         val viewer = context.source.getReplayViewer()
-        val time = IntegerArgumentType.getInteger(context, "time")
+        val time = IntegerArgumentType.getInteger(context, "timestamp")
         if (viewer.jumpTo((time * 50).milliseconds)) {
             return context.source.success("Successfully jumped to timestamp")
         }

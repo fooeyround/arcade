@@ -9,15 +9,15 @@ import com.google.gson.JsonObject
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
+import net.casual.arcade.replay.io.writer.ReplayWriter
+import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.close
 import net.casual.arcade.replay.recorder.ReplayRecorder
-import net.casual.arcade.utils.DateTimeUtils
 import net.casual.arcade.replay.util.FileUtils
 import net.casual.arcade.replay.util.ReplayMarker
 import net.casual.arcade.replay.util.flashback.FlashbackAction
 import net.casual.arcade.replay.util.flashback.FlashbackMarker.Location
-import net.casual.arcade.replay.io.writer.ReplayWriter
-import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.close
 import net.casual.arcade.utils.ArcadeUtils
+import net.casual.arcade.utils.DateTimeUtils
 import net.casual.arcade.utils.JsonUtils
 import net.minecraft.network.ConnectionProtocol
 import net.minecraft.network.ProtocolInfo
@@ -34,7 +34,6 @@ import net.minecraft.world.level.Level
 import org.apache.commons.io.file.PathUtils
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
 import kotlin.io.path.name
 import kotlin.io.path.writer
 import kotlin.time.Duration
@@ -43,7 +42,7 @@ public class FlashbackWriter(
     override val recorder: ReplayRecorder,
     override val path: Path
 ): ReplayWriter {
-    private val executor = Executors.newSingleThreadExecutor()
+    private val executor = ReplayWriter.createExecutor()
 
     private val writer = FlashbackChunkedWriter(this.path, this.recorder.server.registryAccess(), this.recorder.settings)
 

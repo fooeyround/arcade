@@ -15,7 +15,6 @@ public data class SimpleRecorderSettings(
     override val includeResourcePacks: Boolean = true,
     override val chunkRecorderLoadRadius: Int = -1,
     override val skipWhenChunksUnloaded: Boolean = false,
-    override val notifyAdminsOfStatus: Boolean = true,
     override val maxRawRecordingFileSize: FileSize = FileSize(0),
     override val restartAfterMaxRawRecordingFileSize: Boolean = false,
     override val maxRecordingDuration: Duration = Duration.ZERO,

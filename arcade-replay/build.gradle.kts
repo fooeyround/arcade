@@ -12,7 +12,7 @@ dependencies {
     modCompileOnly(libs.voicechat)
     compileOnly(libs.voicechat.api)
 
-    shade(implementation(libs.replay.studio.get())!!)
+    shade(api(libs.replay.studio.get())!!)
 }
 
 loom {

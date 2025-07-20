@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 
 public class ReplayMixinConfig: IMixinConfigPlugin {
     private companion object {
-        const val MIXIN_COMPAT = "me.senseiwells.replay.mixin.compat."
+        const val MIXIN_COMPAT = "net.casual.arcade.replay.mixins.compat."
 
         val incompatible: HashMultimap<String, String> = HashMultimap.create<String, String>()
 
         init {
-            incompatible.put("me.senseiwells.replay.mixin.chunk.ChunkMapMixin", "c2me")
-            incompatible.put("me.senseiwells.replay.mixin.chunk.ChunkHolderMixin", "c2me")
+            incompatible.put("net.casual.arcade.replay.mixins.chunk.ChunkMapMixin", "c2me")
+            incompatible.put("net.casual.arcade.replay.mixins.chunk.ChunkHolderMixin", "c2me")
         }
     }
 

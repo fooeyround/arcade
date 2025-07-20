@@ -17,13 +17,13 @@
     "main": [
       {
         "adapter": "kotlin",
-        "value": "net.casual.replay.ArcadeReplay"
+        "value": "net.casual.arcade.replay.ArcadeReplay"
       }
     ],
     "voicechat": [
       {
         "adapter": "kotlin",
-        "value": "net.casual.replay.compat.voicechat.ReplayVoicechatPlugin"
+        "value": "net.casual.arcade.replay.compat.voicechat.ReplayVoicechatPlugin"
       }
     ]
   },

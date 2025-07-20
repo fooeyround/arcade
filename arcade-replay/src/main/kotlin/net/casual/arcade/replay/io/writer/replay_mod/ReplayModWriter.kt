@@ -15,14 +15,13 @@ import com.replaymod.replaystudio.replay.ReplayMetaData
 import io.netty.buffer.Unpooled
 import io.netty.handler.codec.EncoderException
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToStream
-import net.casual.arcade.replay.recorder.ReplayRecorder
+import net.casual.arcade.replay.io.ReplayModIO
 import net.casual.arcade.replay.io.writer.ReplayWriter
 import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.close
 import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.encodePacket
-import net.casual.arcade.replay.io.ReplayModIO
-import net.casual.arcade.replay.util.*
+import net.casual.arcade.replay.recorder.ReplayRecorder
+import net.casual.arcade.replay.util.FileUtils
+import net.casual.arcade.replay.util.ReplayMarker
 import net.casual.arcade.replay.util.io.SizedZipReplayFile
 import net.casual.arcade.utils.*
 import net.minecraft.SharedConstants
@@ -38,7 +37,6 @@ import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
 import kotlin.io.path.*
 import kotlin.time.Duration
 import com.github.steveice10.netty.buffer.Unpooled as ReplayUnpooled
@@ -48,7 +46,7 @@ public class ReplayModWriter(
     override val recorder: ReplayRecorder,
     override val path: Path
 ): ReplayWriter {
-    private val executor = Executors.newSingleThreadExecutor()
+    private val executor = ReplayWriter.createExecutor()
 
     private val replay: SizedZipReplayFile = SizedZipReplayFile(out = this.path.toFile())
     private val output: ReplayOutputStream = this.replay.writePacketData()
@@ -271,15 +269,15 @@ public class ReplayModWriter(
         this.executor.execute {
             this.replay.writeMetaData(null, this.meta)
 
-            this.replay.write(ReplayWriter.ENTRY_ARCADE_REPLAY_META).use {
+            this.replay.write(ReplayWriter.ENTRY_ARCADE_REPLAY_META).writer().use {
                 val meta = JsonObject()
                 this.recorder.addMetadata(meta)
 
-                JsonUtils.encode(meta, it.writer())
+                JsonUtils.encode(meta, it)
             }
 
-            this.replay.write(ENTRY_SERVER_REPLAY_PACKS).use {
-                Json.encodeToStream(this.packs, it)
+            this.replay.write(ENTRY_SERVER_REPLAY_PACKS).writer().use {
+                JsonUtils.encode(this.path, it)
             }
         }
     }

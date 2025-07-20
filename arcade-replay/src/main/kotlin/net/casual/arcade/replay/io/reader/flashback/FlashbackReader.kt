@@ -9,6 +9,8 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import io.netty.buffer.Unpooled
+import net.casual.arcade.replay.io.FlashbackIO
+import net.casual.arcade.replay.io.reader.ReplayPacketData
 import net.casual.arcade.replay.io.reader.ReplayReader
 import net.casual.arcade.replay.util.ReplayMarker
 import net.casual.arcade.replay.util.flashback.FlashbackAction
@@ -72,12 +74,12 @@ public class FlashbackReader(
         return false
     }
 
-    override fun readPackets(): Sequence<net.casual.arcade.replay.io.reader.ReplayPacketData> {
+    override fun readPackets(): Sequence<ReplayPacketData> {
         return sequence {
             do {
                 if (initial || chunked.shouldPlaySnapshot()) {
                     initial = false
-                    val packets = ArrayList<net.casual.arcade.replay.io.reader.ReplayPacketData>()
+                    val packets = ArrayList<ReplayPacketData>()
                     chunked.consumeSnapshot { action, buffer ->
                         processAction(action, buffer, packets::add)
                     }
@@ -85,7 +87,7 @@ public class FlashbackReader(
                 }
 
                 while (true) {
-                    val packets = ArrayList<net.casual.arcade.replay.io.reader.ReplayPacketData>()
+                    val packets = ArrayList<ReplayPacketData>()
                     val success = chunked.consumeNextAction { action, buffer ->
                         processAction(action, buffer, packets::add)
                     }
@@ -132,7 +134,7 @@ public class FlashbackReader(
     private fun processAction(
         action: FlashbackAction,
         buffer: RegistryFriendlyByteBuf,
-        consumer: (net.casual.arcade.replay.io.reader.ReplayPacketData) -> Unit
+        consumer: (ReplayPacketData) -> Unit
     ) {
         when (action) {
             FlashbackAction.NextTick -> this.tick++
@@ -145,18 +147,12 @@ public class FlashbackReader(
         }
     }
 
-    private fun processConfigurationAction(buffer: RegistryFriendlyByteBuf, consumer: (net.casual.arcade.replay.io.reader.ReplayPacketData) -> Unit) {
+    private fun processConfigurationAction(buffer: RegistryFriendlyByteBuf, consumer: (ReplayPacketData) -> Unit) {
         val packet = ConfigurationProtocols.CLIENTBOUND.codec().decode(buffer)
-        consumer.invoke(
-            net.casual.arcade.replay.io.reader.ReplayPacketData(
-                ConnectionProtocol.CONFIGURATION,
-                packet,
-                this.tickAsDuration
-            )
-        )
+        consumer.invoke(ReplayPacketData(ConnectionProtocol.CONFIGURATION, packet, this.tickAsDuration))
     }
 
-    private fun processPlayAction(buffer: RegistryFriendlyByteBuf, consumer: (net.casual.arcade.replay.io.reader.ReplayPacketData) -> Unit) {
+    private fun processPlayAction(buffer: RegistryFriendlyByteBuf, consumer: (ReplayPacketData) -> Unit) {
         val packet = this.viewer.gameProtocol.codec().decode(buffer)
         if (packet is ClientboundLoginPacket) {
             this.player = packet.playerId
@@ -168,29 +164,17 @@ public class FlashbackReader(
             val position = packet.values.position
             this.updateChunkCacheCenter(position.x, position.y, position.z, consumer)
             val teleport = ClientboundPlayerPositionPacket(-1, packet.values, setOf())
-            consumer.invoke(
-                net.casual.arcade.replay.io.reader.ReplayPacketData(
-                    ConnectionProtocol.PLAY,
-                    teleport,
-                    this.tickAsDuration
-                )
-            )
+            consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, teleport, this.tickAsDuration))
             if (this.respawned) {
                 this.respawned = false
                 this.viewer.markForTeleportation()
             }
         }
 
-        consumer.invoke(
-            net.casual.arcade.replay.io.reader.ReplayPacketData(
-                ConnectionProtocol.PLAY,
-                packet,
-                this.tickAsDuration
-            )
-        )
+        consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, packet, this.tickAsDuration))
     }
 
-    private fun processCachedChunk(buffer: RegistryFriendlyByteBuf, consumer: (net.casual.arcade.replay.io.reader.ReplayPacketData) -> Unit) {
+    private fun processCachedChunk(buffer: RegistryFriendlyByteBuf, consumer: (ReplayPacketData) -> Unit) {
         val index = buffer.readVarInt()
         var packet = this.cache.getIfPresent(index)
         if (packet == null) {
@@ -198,17 +182,11 @@ public class FlashbackReader(
             packet = this.cache.getIfPresent(index)
         }
         if (packet != null) {
-            consumer.invoke(
-                net.casual.arcade.replay.io.reader.ReplayPacketData(
-                    ConnectionProtocol.PLAY,
-                    packet,
-                    this.tickAsDuration
-                )
-            )
+            consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, packet, this.tickAsDuration))
         }
     }
 
-    private fun processCreatePlayer(buffer: RegistryFriendlyByteBuf, consumer: (net.casual.arcade.replay.io.reader.ReplayPacketData) -> Unit) {
+    private fun processCreatePlayer(buffer: RegistryFriendlyByteBuf, consumer: (ReplayPacketData) -> Unit) {
         val uuid = buffer.readUUID()
         val x = buffer.readDouble()
         val y = buffer.readDouble()
@@ -224,17 +202,16 @@ public class FlashbackReader(
         val packet = ClientboundAddEntityPacket(
             this.player, uuid, x, y, z, xRot, yRot, EntityType.PLAYER, 0, velocity, headRot.toDouble()
         )
-        consumer.invoke(
-            net.casual.arcade.replay.io.reader.ReplayPacketData(
-                ConnectionProtocol.PLAY,
-                packet,
-                this.tickAsDuration
-            )
+        consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, packet, this.tickAsDuration))
+        // We teleport the player for chunk recordings
+        val teleport = ClientboundPlayerPositionPacket(
+            this.player, PositionMoveRotation(Vec3(x, y, z), Vec3.ZERO, yRot, xRot), setOf()
         )
+        consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, teleport, this.tickAsDuration))
         this.updateChunkCacheCenter(x, y, z, consumer)
     }
 
-    private fun processMoveEntities(buffer: RegistryFriendlyByteBuf, consumer: (net.casual.arcade.replay.io.reader.ReplayPacketData) -> Unit) {
+    private fun processMoveEntities(buffer: RegistryFriendlyByteBuf, consumer: (ReplayPacketData) -> Unit) {
         val dimensions = buffer.readVarInt()
         for (i in 0..<dimensions) {
             @Suppress("UNUSED_VARIABLE")
@@ -248,54 +225,36 @@ public class FlashbackReader(
                     setOf(),
                     movement.onGround
                 )
-                consumer.invoke(
-                    net.casual.arcade.replay.io.reader.ReplayPacketData(
-                        ConnectionProtocol.PLAY,
-                        packet,
-                        this.tickAsDuration
-                    )
-                )
+                consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, packet, this.tickAsDuration))
                 if (movement.id != this.player) {
                     continue
                 }
                 val position = ClientboundPlayerPositionPacket(-1, packet.change, setOf())
-                consumer.invoke(
-                    net.casual.arcade.replay.io.reader.ReplayPacketData(
-                        ConnectionProtocol.PLAY,
-                        position,
-                        this.tickAsDuration
-                    )
-                )
+                consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, position, this.tickAsDuration))
                 this.updateChunkCacheCenter(movement.position.x, movement.position.y, movement.position.z, consumer)
             }
         }
     }
 
-    private fun updateChunkCacheCenter(x: Double, y: Double, z: Double, consumer: (net.casual.arcade.replay.io.reader.ReplayPacketData) -> Unit) {
+    private fun updateChunkCacheCenter(x: Double, y: Double, z: Double, consumer: (ReplayPacketData) -> Unit) {
         val pos = ChunkPos(BlockPos.containing(x, y, z))
         if (pos != this.chunk) {
             this.chunk = pos
-            val cache = ClientboundSetChunkCacheCenterPacket(chunk.x, chunk.z)
-            consumer.invoke(
-                net.casual.arcade.replay.io.reader.ReplayPacketData(
-                    ConnectionProtocol.PLAY,
-                    cache,
-                    this.tickAsDuration
-                )
-            )
+            val cache = ClientboundSetChunkCacheCenterPacket(this.chunk.x, this.chunk.z)
+            consumer.invoke(ReplayPacketData(ConnectionProtocol.PLAY, cache, this.tickAsDuration))
         }
     }
 
     private fun loadChunkCache(index: Int) {
-        val fileIndex = net.casual.arcade.replay.io.FlashbackIO.getChunkCacheFileIndex(index)
-        val chunks = this.system.getPath(net.casual.arcade.replay.io.FlashbackIO.CHUNK_CACHES).resolve("$fileIndex")
+        val fileIndex = FlashbackIO.getChunkCacheFileIndex(index)
+        val chunks = this.system.getPath(FlashbackIO.CHUNK_CACHES).resolve("$fileIndex")
         if (chunks.notExists()) {
             ArcadeUtils.logger.error("Failed to load chunk caches for file $fileIndex")
             return
         }
         try {
             chunks.inputStream().use { stream ->
-                var i = fileIndex * net.casual.arcade.replay.io.FlashbackIO.LEVEL_CHUNK_CACHE_SIZE
+                var i = fileIndex * FlashbackIO.LEVEL_CHUNK_CACHE_SIZE
                 while (true) {
                     val bytes = stream.readNBytes(4)
                     if (bytes.size < 4) {
