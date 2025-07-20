@@ -6,7 +6,6 @@ package net.casual.arcade.replay.recorder.settings
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.util.io.FileSize
 import kotlin.time.Duration
 
@@ -19,7 +18,6 @@ public interface RecorderSettings {
     public val includeResourcePacks: Boolean
     public val chunkRecorderLoadRadius: Int
     public val skipWhenChunksUnloaded: Boolean
-    public val notifyAdminsOfStatus: Boolean
 
     public val maxRawRecordingFileSize: FileSize
     public val restartAfterMaxRawRecordingFileSize: Boolean

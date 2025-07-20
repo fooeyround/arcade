@@ -19,7 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.casual.arcade.replay.io.writer.ReplayWriter
-import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.closeWithFeedback
+import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.close
 import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.encodePacket
 import net.casual.arcade.replay.io.ReplayModIO
 import net.casual.arcade.replay.util.*
@@ -135,7 +135,7 @@ public class ReplayModWriter(
                 this.replay.close()
                 ReplayModIO.deleteCaches(this.path)
             }
-            this.closeWithFeedback(save, ::write, ::close)
+            this.close(save, ::write, ::close)
         }, this.executor)
 
         this.executor.shutdown()
@@ -271,7 +271,7 @@ public class ReplayModWriter(
         this.executor.execute {
             this.replay.writeMetaData(null, this.meta)
 
-            this.replay.write(ReplayWriter.ENTRY_SERVER_REPLAY_META).use {
+            this.replay.write(ReplayWriter.ENTRY_ARCADE_REPLAY_META).use {
                 val meta = JsonObject()
                 this.recorder.addMetadata(meta)
 

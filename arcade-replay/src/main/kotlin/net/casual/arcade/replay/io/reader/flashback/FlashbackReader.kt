@@ -40,7 +40,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 public class FlashbackReader(
     private val viewer: ReplayViewer,
-    private val path: Path
+    override val path: Path
 ): ReplayReader {
     private val system = FileSystems.newFileSystem(this.path)
     private val chunked = FlashbackChunkedReader(this.system, this.viewer.server.registryAccess())

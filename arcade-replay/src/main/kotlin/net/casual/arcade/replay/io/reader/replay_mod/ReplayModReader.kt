@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 public class ReplayModReader(
     private val viewer: ReplayViewer,
-    private val path: Path
+    override val path: Path
 ): ReplayReader {
     private val replay = ZipReplayFile(ReplayStudio(), this.path.toFile())
 

@@ -9,7 +9,6 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.stream.ChunkedStream
 import net.casual.arcade.utils.network.ResolvableURL
-import net.casual.arcade.utils.ArcadeUtils
 import net.mcbrawls.inject.api.InjectorContext
 import net.mcbrawls.inject.fabric.InjectFabric
 import net.mcbrawls.inject.http.HttpByteBuf
@@ -20,9 +19,6 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.readLines
-import kotlin.io.path.writeText
 
 /**
  * This is a global pack hosting instance

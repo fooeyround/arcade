@@ -8,17 +8,18 @@ import com.google.gson.JsonObject
 import com.mojang.authlib.GameProfile
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.casual.arcade.events.GlobalEventHandler
-import net.casual.arcade.replay.api.network.RecordablePayload
+import net.casual.arcade.replay.recorder.packet.RecordablePayload
 import net.casual.arcade.replay.recorder.chunk.ReplayChunkRecorder
 import net.casual.arcade.replay.recorder.player.ReplayPlayerRecorder
 import net.casual.arcade.utils.DateTimeUtils.formatHHMMSS
 import net.casual.arcade.utils.getDebugName
 import net.casual.arcade.replay.ArcadeReplay
+import net.casual.arcade.replay.events.ReplayRecorderDurationLimitEvent
 import net.casual.arcade.replay.events.ReplayRecorderStartEvent
 import net.casual.arcade.replay.events.ReplayRecorderStopEvent
+import net.casual.arcade.replay.events.player.ReplayRecorderFileSizeLimitEvent
 import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.io.writer.ReplayWriter
-import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.broadcastToOpsAndConsole
 import net.casual.arcade.replay.util.DebugPacketData
 import net.casual.arcade.replay.util.FileUtils
 import net.casual.arcade.replay.util.ReplayMarker
@@ -46,6 +47,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
+import kotlin.collections.ArrayList
 import kotlin.io.path.pathString
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -69,6 +72,7 @@ public abstract class ReplayRecorder(
     protected val path: Path,
 ) {
     private val packets by lazy { Object2ObjectOpenHashMap<String, DebugPacketData>() }
+    private val metaProviders = ArrayList<Consumer<JsonObject>>()
 
     private var start: Long = 0
 
@@ -214,7 +218,6 @@ public abstract class ReplayRecorder(
     @JvmOverloads
     public fun onStart(mode: StartingMode = StartingMode.Start) {
         GlobalEventHandler.Server.broadcast(ReplayRecorderStartEvent(this, mode))
-        this.writer.broadcastToOpsAndConsole("${mode.getContinuousVerb()} replay for ${this.getName()}")
     }
 
     /**
@@ -234,7 +237,7 @@ public abstract class ReplayRecorder(
         }
 
         if (this.settings.debug) {
-            this.writer.broadcastToOpsAndConsole("Replay ${this.getName()} Debug Packet Data:\n${this.getDebugPacketData()}")
+            ArcadeUtils.logger.info("Replay ${this.getName()} Debug Packet Data:\n${this.getDebugPacketData()}")
         }
 
         // We only save if the player has actually logged in...
@@ -346,7 +349,6 @@ public abstract class ReplayRecorder(
      * @param meta The JSON metadata map which can be mutated.
      */
     public open fun addMetadata(meta: JsonObject) {
-        // TODO: Add some way for external meta
         meta.addProperty("name", this.getName())
         meta.addProperty("location", this.location.pathString)
         meta.addProperty("epoch_time_ms", System.currentTimeMillis())
@@ -359,6 +361,19 @@ public abstract class ReplayRecorder(
 
         meta.addProperty("version", ArcadeUtils.version)
         meta.add("settings", this.settings.asJson())
+
+        for (provider in this.metaProviders) {
+            provider.accept(meta)
+        }
+    }
+
+    /**
+     * This allows you to inject additional metadata to the replay file.
+     *
+     * @param provider The metadata provider.
+     */
+    public fun addMetadataProvider(provider: Consumer<JsonObject>) {
+        this.metaProviders.add(provider)
     }
 
     protected fun spawnPlayer(player: ServerPlayer, packets: Collection<Packet<*>>) {
@@ -389,13 +404,6 @@ public abstract class ReplayRecorder(
      * @return The name of the replay recording.
      */
     public abstract fun getName(): String
-
-    /**
-     * This gets the viewing command for this replay for after it's saved.
-     *
-     * @return The command to view this replay.
-     */
-    public abstract fun getViewingCommand(): String
 
     /**
      * This starts the replay recording, note this is **not** called
@@ -504,9 +512,7 @@ public abstract class ReplayRecorder(
         if (maxDuration.isPositive()) {
             if (this.getTimestamp() > maxDuration) {
                 this.stop(true)
-                this.writer.broadcastToOpsAndConsole(
-                    "Stopped recording replay for ${this.getName()}, past duration limit ${maxDuration}!"
-                )
+                GlobalEventHandler.Server.broadcast(ReplayRecorderDurationLimitEvent(this))
                 if (this.settings.restartAfterMaxRecordingDuration) {
                     this.restart()
                 }
@@ -518,9 +524,7 @@ public abstract class ReplayRecorder(
         if (maxFileSize.bytes > 0) {
             if (this.getRawRecordingSize() > maxFileSize.bytes) {
                 this.stop(true)
-                this.writer.broadcastToOpsAndConsole(
-                    "Stopped recording replay for ${this.getName()}, past file size limit ${maxDuration}!"
-                )
+                GlobalEventHandler.Server.broadcast(ReplayRecorderFileSizeLimitEvent(this))
                 if (this.settings.restartAfterMaxRawRecordingFileSize) {
                     this.restart()
                 }
@@ -532,7 +536,7 @@ public abstract class ReplayRecorder(
     public enum class StartingMode {
         Start, Restart;
 
-        internal fun getContinuousVerb(): String {
+        public fun getContinuousVerb(): String {
             return when (this) {
                 Start -> "Starting"
                 Restart -> "Restarting"

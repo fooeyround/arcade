@@ -181,15 +181,6 @@ public class ReplayChunkRecorder internal constructor(
     }
 
     /**
-     * This gets the viewing command for this replay for after it's saved.
-     *
-     * @return The command to view this replay.
-     */
-    override fun getViewingCommand(): String {
-        return "/replay view chunks \"${this.recorderName}\" \"${this.location.nameWithoutExtension}\""
-    }
-
-    /**
      * This gets the current timestamp (in milliseconds) of the replay recording.
      * This subtracts the amount of time paused from the total recording time.
      *

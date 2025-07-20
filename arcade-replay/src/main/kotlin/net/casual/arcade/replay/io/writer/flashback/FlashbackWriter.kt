@@ -16,7 +16,7 @@ import net.casual.arcade.replay.util.ReplayMarker
 import net.casual.arcade.replay.util.flashback.FlashbackAction
 import net.casual.arcade.replay.util.flashback.FlashbackMarker.Location
 import net.casual.arcade.replay.io.writer.ReplayWriter
-import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.closeWithFeedback
+import net.casual.arcade.replay.io.writer.ReplayWriter.Companion.close
 import net.casual.arcade.utils.ArcadeUtils
 import net.casual.arcade.utils.JsonUtils
 import net.minecraft.network.ConnectionProtocol
@@ -199,7 +199,7 @@ public class FlashbackWriter(
                 this.writeCustomMeta()
                 FileUtils.zip(this.path, this.getOutputPath())
             }
-            this.closeWithFeedback(save, ::write, this.writer::close)
+            this.close(save, ::write, this.writer::close)
         }, this.executor)
         this.executor.shutdown()
         return future
@@ -254,7 +254,7 @@ public class FlashbackWriter(
         try {
             val meta = JsonObject()
             this.recorder.addMetadata(meta)
-            val path = this.path.resolve(ReplayWriter.ENTRY_SERVER_REPLAY_META)
+            val path = this.path.resolve(ReplayWriter.ENTRY_ARCADE_REPLAY_META)
             path.writer().use { JsonUtils.encode(meta, it) }
         } catch (exception: Exception) {
             ArcadeUtils.logger.error("Failed to write ServerReplay meta!", exception)

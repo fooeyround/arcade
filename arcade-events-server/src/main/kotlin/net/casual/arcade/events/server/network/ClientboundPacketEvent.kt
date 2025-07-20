@@ -23,12 +23,12 @@ public data class ClientboundPacketEvent(
          *
          * This is the default phase for this event.
          */
-        public const val PRE_PHASE: String = BuiltInEventPhases.PRE
+        public const val PHASE_PRE: String = BuiltInEventPhases.PRE
 
         /**
          * This phase in invoked **after** the packet has been sent to the client.
          * The [packet] can no longer be modified.
          */
-        public const val POST_PHASE: String = BuiltInEventPhases.POST
+        public const val PHASE_POST: String = BuiltInEventPhases.POST
     }
 }

@@ -5,7 +5,11 @@
 package net.casual.arcade.replay.io.writer
 
 import io.netty.buffer.ByteBuf
-import net.casual.arcade.replay.api.network.RecordablePayload
+import net.casual.arcade.events.BuiltInEventPhases
+import net.casual.arcade.events.GlobalEventHandler
+import net.casual.arcade.replay.events.ReplayRecorderCloseEvent
+import net.casual.arcade.replay.events.ReplayRecorderSaveEvent
+import net.casual.arcade.replay.recorder.packet.RecordablePayload
 import net.casual.arcade.replay.mixins.network.IdDispatchCodecAccessor
 import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.casual.arcade.replay.util.FileUtils
@@ -76,30 +80,10 @@ public interface ReplayWriter {
     public fun close(duration: Duration, save: Boolean): CompletableFuture<Long>
 
     public companion object {
-        public const val ENTRY_SERVER_REPLAY_META: String = "server_replay_meta.json"
+        public const val ENTRY_ARCADE_REPLAY_META: String = "arcade_replay_meta.json"
 
         public val ReplayWriter.name: String
             get() = this.recorder.getName()
-
-        public fun ReplayWriter.broadcastToOps(message: Component) {
-            if (this.recorder.settings.notifyAdminsOfStatus) {
-                this.recorder.server.execute {
-                    this.recorder.server.playerList.players.filter {
-                        this.recorder.server.playerList.isOp(it.gameProfile)
-                    }.forEach { it.sendSystemMessage(message) }
-                }
-            }
-        }
-
-        public fun ReplayWriter.broadcastToOpsAndConsole(message: String) {
-            this.broadcastToOps(Component.literal(message))
-            ArcadeUtils.logger.info(message)
-        }
-
-        public fun ReplayWriter.broadcastToOpsAndConsole(message: Component) {
-            this.broadcastToOps(message)
-            ArcadeUtils.logger.info(message.string)
-        }
 
         public fun encodePacket(packet: Packet<*>, protocol: ProtocolInfo<*>, buf: FriendlyByteBuf) {
             @Suppress("UNCHECKED_CAST")
@@ -122,45 +106,30 @@ public interface ReplayWriter {
             codec.encode(buf, packet)
         }
 
-        internal fun ReplayWriter.closeWithFeedback(
+        internal fun ReplayWriter.close(
             save: Boolean,
             writer: () -> Unit,
             closer: () -> Unit
         ): Long {
             var size = 0L
             try {
-                val additional = Component.empty()
                 if (save) {
-                    this.broadcastToOpsAndConsole("Starting to save replay ${this.name}, please do not stop the server!")
-                    writer.invoke()
                     val output = this.getOutputPath()
+                    val event = ReplayRecorderSaveEvent(this.recorder, output)
+                    GlobalEventHandler.Server.broadcast(event, BuiltInEventPhases.PRE_PHASES)
+                    writer.invoke()
                     size = output.fileSize()
 
-                    val click = ClickEvent.SuggestCommand(this.recorder.getViewingCommand())
-                    val hover = HoverEvent.ShowText(Component.literal("Click to view replay"))
-                    additional.append(" and saved to ")
-                        .append(Component.literal(output.toString()).withStyle {
-                            it.withClickEvent(click).withHoverEvent(hover).withColor(ChatFormatting.GREEN)
-                        })
-                        .append(", compressed to ${FileUtils.formatSize(size)}")
+                    GlobalEventHandler.Server.broadcast(event, BuiltInEventPhases.POST_PHASES)
                 }
                 try {
                     closer.invoke()
-                    this.broadcastToOpsAndConsole(
-                        Component.literal("Successfully closed replay ${this.name}").append(additional)
-                    )
+                    GlobalEventHandler.Server.broadcast(ReplayRecorderCloseEvent(this.recorder))
                 } catch (exception: Exception) {
-                    val message = "Failed to close replay writer"
-                    this.broadcastToOps(Component.literal(message).append(additional))
-                    ArcadeUtils.logger.error(message, exception)
+                    ArcadeUtils.logger.error("Failed to close replay writer", exception)
                 }
             } catch (exception: Exception) {
-                val message = "Failed to write replay ${this.name}"
-                val hover = HoverEvent.ShowText(Component.literal(exception.stackTraceToString()))
-                this.broadcastToOps(Component.literal(message).withStyle {
-                    it.withHoverEvent(hover)
-                })
-                ArcadeUtils.logger.error(message, exception)
+                ArcadeUtils.logger.error("Failed to write replay ${this.name}", exception)
                 throw exception
             }
             return size

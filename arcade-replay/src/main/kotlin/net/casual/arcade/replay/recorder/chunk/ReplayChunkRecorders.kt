@@ -182,7 +182,7 @@ public object ReplayChunkRecorders {
     }
 
     internal fun registerEvents() {
-        GlobalEventHandler.Server.register<ServerStopEvent>(phase = ServerStopEvent.POST_PHASE) {
+        GlobalEventHandler.Server.register<ServerStopEvent>(phase = ServerStopEvent.PHASE_POST) {
             for (recorder in this.recorders.values.toList()) {
                 recorder.stop()
             }

@@ -7,10 +7,12 @@ package net.casual.arcade.replay.io.reader
 import com.google.common.collect.Multimap
 import net.casual.arcade.replay.util.ReplayMarker
 import java.io.InputStream
+import java.nio.file.Path
 import kotlin.time.Duration
 
 public interface ReplayReader {
     public val duration: Duration
+    public val path: Path
 
     public fun jumpTo(timestamp: Duration): Boolean
 

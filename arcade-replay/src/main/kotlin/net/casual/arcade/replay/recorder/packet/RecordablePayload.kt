@@ -2,7 +2,7 @@
  * Copyright (c) 2025 senseiwells
  * Licensed under the MIT License. See LICENSE file in the project root for details.
  */
-package net.casual.arcade.replay.api.network
+package net.casual.arcade.replay.recorder.packet
 
 import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.minecraft.network.FriendlyByteBuf

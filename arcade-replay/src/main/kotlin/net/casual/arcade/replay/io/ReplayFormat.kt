@@ -28,10 +28,10 @@ public enum class ReplayFormat(
         }
     }
 
-    public fun reader(viewer: ReplayViewer, path: Path): ReplayReader {
+    public fun reader(path: Path): (ReplayViewer) -> ReplayReader {
         return when (this) {
-            ReplayMod -> ReplayModReader(viewer, path)
-            Flashback -> FlashbackReader(viewer, path)
+            ReplayMod -> ({ ReplayModReader(it, path) })
+            Flashback -> ({ FlashbackReader(it, path)})
         }
     }
 

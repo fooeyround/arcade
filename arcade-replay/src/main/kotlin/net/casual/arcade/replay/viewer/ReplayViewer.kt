@@ -10,13 +10,11 @@ import it.unimi.dsi.fastutil.ints.IntSets
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import it.unimi.dsi.fastutil.longs.LongSets
 import kotlinx.coroutines.*
-import net.casual.arcade.replay.ducks.PackTracker
-import net.casual.arcade.replay.mixins.viewer.EntityInvoker
 import net.casual.arcade.host.GlobalPackHost
-import net.casual.arcade.replay.io.ReplayFormat
+import net.casual.arcade.replay.ducks.PackTracker
 import net.casual.arcade.replay.io.reader.ReplayReader
+import net.casual.arcade.replay.mixins.viewer.EntityInvoker
 import net.casual.arcade.replay.recorder.rejoin.RejoinedReplayPlayer
-import net.casual.arcade.utils.DateTimeUtils.formatHHMMSS
 import net.casual.arcade.replay.util.ReplayMarker
 import net.casual.arcade.replay.viewer.ReplayViewerUtils.getViewingReplay
 import net.casual.arcade.replay.viewer.ReplayViewerUtils.sendReplayPacket
@@ -28,6 +26,7 @@ import net.casual.arcade.utils.ComponentUtils.lime
 import net.casual.arcade.utils.ComponentUtils.red
 import net.casual.arcade.utils.ComponentUtils.teal
 import net.casual.arcade.utils.ComponentUtils.yellow
+import net.casual.arcade.utils.DateTimeUtils.formatHHMMSS
 import net.casual.arcade.utils.PlayerUtils.levelServer
 import net.minecraft.core.UUIDUtil
 import net.minecraft.network.ConnectionProtocol
@@ -56,20 +55,18 @@ import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.Objective
 import net.minecraft.world.scores.criteria.ObjectiveCriteria
 import java.io.InputStream
-import java.nio.file.Path
 import java.util.*
 import java.util.function.Supplier
-import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlin.math.abs
 import kotlin.time.Duration
 
 @OptIn(ExperimentalCoroutinesApi::class)
 public class ReplayViewer internal constructor(
-    private val path: Path,
+    supplier: (ReplayViewer) -> ReplayReader,
     public val connection: ServerGamePacketListenerImpl
 ) {
-    private val reader = this.createReader()
+    private val reader = supplier.invoke(this)
     private val markers by lazy { this.reader.readMarkers() }
 
     private val packs = ReplayViewerPackProvider(this)
@@ -329,7 +326,7 @@ public class ReplayViewer internal constructor(
         this.lastSentProgress = progress
 
         val title = Component.empty()
-            .append(Component.literal(this.path.nameWithoutExtension).lime())
+            .append(Component.literal(this.reader.path.nameWithoutExtension).lime())
             .append(" ")
             .append(Component.literal(progress.formatHHMMSS()).yellow().bold())
         if (this.paused) {
@@ -631,12 +628,6 @@ public class ReplayViewer internal constructor(
 
     internal fun send(packet: Packet<*>) {
         this.connection.sendReplayPacket(packet)
-    }
-
-    private fun createReader(): ReplayReader {
-        val format = ReplayFormat.formatOf(this.path)
-            ?: throw IllegalStateException("Tried to read unknown replay file type: ${this.path.extension}")
-        return format.reader(this, this.path)
     }
 
     private companion object {

@@ -142,15 +142,6 @@ public class ReplayPlayerRecorder internal constructor(
     }
 
     /**
-     * This gets the viewing command for this replay for after it's saved.
-     *
-     * @return The command to view this replay.
-     */
-    override fun getViewingCommand(): String {
-        return "/replay view players ${this.profile.id} \"${this.location.nameWithoutExtension}\""
-    }
-
-    /**
      * The player's chunk position.
      *
      * @return The player's chunk position.

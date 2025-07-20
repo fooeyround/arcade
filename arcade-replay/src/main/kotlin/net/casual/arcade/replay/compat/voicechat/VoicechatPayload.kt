@@ -4,7 +4,7 @@
  */
 package net.casual.arcade.replay.compat.voicechat
 
-import net.casual.arcade.replay.api.network.RecordablePayload
+import net.casual.arcade.replay.recorder.packet.RecordablePayload
 import net.casual.arcade.replay.io.ReplayFormat
 import net.casual.arcade.replay.recorder.ReplayRecorder
 import net.minecraft.network.FriendlyByteBuf
