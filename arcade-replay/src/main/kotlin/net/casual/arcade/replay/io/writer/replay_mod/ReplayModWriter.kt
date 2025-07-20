@@ -264,7 +264,6 @@ public class ReplayModWriter(
         return meta
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     private fun saveMeta() {
         this.executor.execute {
             this.replay.writeMetaData(null, this.meta)
@@ -277,7 +276,7 @@ public class ReplayModWriter(
             }
 
             this.replay.write(ENTRY_SERVER_REPLAY_PACKS).writer().use {
-                JsonUtils.encode(this.path, it)
+                JsonUtils.encode(this.meta, it)
             }
         }
     }
