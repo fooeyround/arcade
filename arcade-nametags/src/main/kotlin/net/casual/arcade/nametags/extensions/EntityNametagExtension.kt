@@ -32,12 +32,12 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.Pose
 
 public class EntityNametagExtension(entity: Entity): EntityExtension(entity) {
+    private val holder = ArcadeNametags.createNametagElementHolder(entity)
     private val attachment: EntityAttachment?
 
     init {
-        val holder = ArcadeNametags.createNametagElementHolder(entity)
-        if (holder != null) {
-            this.attachment = EntityAttachment.ofTicking(holder, entity)
+        if (this.holder != null) {
+            this.attachment = EntityAttachment.ofTicking(this.holder, entity)
         } else {
             this.attachment = null
         }
@@ -57,8 +57,8 @@ public class EntityNametagExtension(entity: Entity): EntityExtension(entity) {
         return extension
     }
 
-    private fun getHolder(): NametagElementHolder? {
-        return this.attachment?.holder() as? NametagElementHolder
+    public fun getHolder(): NametagElementHolder? {
+        return this.holder
     }
 
     public companion object {
