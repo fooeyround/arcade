@@ -2,7 +2,9 @@
 
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
+// == Boundary Start ==
 #moj_import <minecraft:globals.glsl>
+// == Boundary End ==
 
 uniform sampler2D Sampler0;
 
