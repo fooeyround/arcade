@@ -4,11 +4,14 @@
  */
 package net.casual.arcade.extensions.mixins.entity;
 
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.casual.arcade.events.GlobalEventHandler;
 import net.casual.arcade.extensions.*;
 import net.casual.arcade.extensions.TransferableEntityExtension.TransferReason;
 import net.casual.arcade.extensions.event.EntityExtensionEvent;
 import net.casual.arcade.utils.ArcadeUtils;
+import net.casual.arcade.utils.impl.DelayedInvokers;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -22,6 +25,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.LinkedList;
 
 @Mixin(Entity.class)
 public class EntityMixin implements ExtensionHolder {
@@ -76,13 +81,39 @@ public class EntityMixin implements ExtensionHolder {
         method = "restoreFrom",
         at = @At("HEAD")
     )
-    private void onRestoreEntity(Entity entity, CallbackInfo ci) {
+    private void onRestoreEntity(
+        Entity entity,
+        CallbackInfo ci,
+        @Share("delayed") LocalRef<DelayedInvokers.Simple> delayedRef
+    ) {
+        if (entity instanceof ServerPlayer) {
+            return;
+        }
+
+        DelayedInvokers.Simple delayed = new DelayedInvokers.Simple();
+        delayedRef.set(delayed);
+
         for (Extension extension : ExtensionHolder.all((ExtensionHolder) entity)) {
             if (extension instanceof TransferableEntityExtension transferable) {
                 TransferReason reason = TransferReason.Other;
-                Extension transferred = transferable.transfer((Entity) (Object) this, reason);
+                Extension transferred = transferable.transfer((Entity) (Object) this, reason, delayed);
                 this.arcade$extensions.add(transferred);
             }
+        }
+    }
+
+    @Inject(
+        method = "restoreFrom",
+        at = @At("RETURN")
+    )
+    private void onRestoreEntityPost(
+        Entity entity,
+        CallbackInfo ci,
+        @Share("delayed") LocalRef<DelayedInvokers.Simple> delayedRef
+    ) {
+        DelayedInvokers.Simple delayed = delayedRef.get();
+        if (delayed != null) {
+            delayed.invoke();
         }
     }
 
