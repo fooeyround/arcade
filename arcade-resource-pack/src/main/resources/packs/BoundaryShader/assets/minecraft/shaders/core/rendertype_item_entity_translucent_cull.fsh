@@ -2,7 +2,9 @@
 
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
+// == Boundary Start ==
 #moj_import <minecraft:globals.glsl>
+// == Boundary End ==
 
 uniform sampler2D Sampler0;
 
@@ -29,10 +31,11 @@ void main() {
     if (isBoundary > 0.5) {
         vec2 localUV = uv;
         vec2 repeat = vec2(width, height);
-        localUV -= (GameTime * 256.0) / repeat;
+//        localUV -= (GameTime * 256.0) / repeat;
         vec2 tiledUV = fract(localUV * repeat);
         vec2 atlasUV = minTexCoord + tiledUV / scale;
 
+//        vec4 color = vec4(tiledUV, 0, 1);
         vec4 color = texture(Sampler0, atlasUV) * vertexColor;
         if (color.a < 0.1) {
             discard;
