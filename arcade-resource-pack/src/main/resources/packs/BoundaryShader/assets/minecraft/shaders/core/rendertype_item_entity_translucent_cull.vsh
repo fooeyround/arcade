@@ -106,7 +106,7 @@ void main() {
 
         vec2 size = textureSize(Sampler0, 0);
         texCoord0 += 8 * (uv * -2 + 1) / size;
-        scale = vec2(256, 256 * (size.y / size.x));
+        scale = size / 16;
         minTexCoord = texCoord0.xy - uv / scale;
 
         if (isCube) {
