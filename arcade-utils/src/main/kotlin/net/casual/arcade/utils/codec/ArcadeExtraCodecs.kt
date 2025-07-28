@@ -122,14 +122,33 @@ public object ArcadeExtraCodecs {
         return ExtraCodecs.optionalEmptyMap(Codec.STRING).xmap(map::get, inverse::get)
     }
 
+    @Deprecated(
+        "Use keyedUnboundedMergedMap instead",
+        ReplaceWith("this.keyedUnboundedMergedMap(keyCodec, valueMapCodec, keyName)")
+    )
     public fun <K, V> keyedUnboundedMapCodec(
         keyCodec: Codec<K>,
         valueMapCodec: MapCodec<V>,
         keyName: String = "id"
     ): Codec<Map<K, V>> {
+        return this.keyedUnboundedMergedMap(keyCodec, valueMapCodec, keyName)
+    }
+
+    public fun <K, V> keyedUnboundedMergedMap(
+        keyCodec: Codec<K>,
+        valueMapCodec: MapCodec<V>,
+        keyName: String = "id"
+    ): Codec<Map<K, V>> {
+        return this.unboundedMergedMap(keyCodec.fieldOf(keyName), valueMapCodec)
+    }
+
+    public fun <K, V> unboundedMergedMap(
+        keyCodec: MapCodec<K>,
+        valueMapCodec: MapCodec<V>
+    ): Codec<Map<K, V>> {
         val entryCodec = OrderedRecordCodecBuilder.create<Pair<K, V>> { instance ->
             instance.group(
-                keyCodec.fieldOf(keyName).forGetter { it.first },
+                keyCodec.forGetter { it.first },
                 valueMapCodec.forGetter { it.second }
             ).apply(instance, ::Pair)
         }
