@@ -15,6 +15,7 @@ import net.casual.arcade.resources.utils.ResourcePackUtils.sendResourcePack
 import net.casual.arcade.resources.utils.ResourcePackUtils.toPackInfo
 import net.casual.arcade.test.command.LevelBoundaryCommand
 import net.casual.arcade.test.command.PlayerHeadCommand
+import net.casual.arcade.test.command.ReplayCommand
 import net.casual.arcade.test.minigame.TestMinigame
 import net.casual.arcade.utils.ArcadeUtils
 import net.fabricmc.api.ModInitializer
@@ -23,7 +24,7 @@ import net.minecraft.core.Registry
 object ArcadeTest: ModInitializer {
     override fun onInitialize() {
         GlobalEventHandler.Server.register<ServerRegisterCommandEvent> {
-            it.register(LevelBoundaryCommand, PlayerHeadCommand)
+            it.register(LevelBoundaryCommand, PlayerHeadCommand, ReplayCommand)
         }
 
         Registry.register(
@@ -32,8 +33,8 @@ object ArcadeTest: ModInitializer {
             TestMinigame.codec()
         )
 
-        this.playerHeadTests()
-        this.boundaryTests()
+//        this.playerHeadTests()
+//        this.boundaryTests()
     }
 
     private fun playerHeadTests() {

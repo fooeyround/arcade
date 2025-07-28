@@ -26,7 +26,7 @@ import java.util.function.Consumer
 
 public class NametagHeightElement(
     private val entity: Entity,
-    private val height: NametagHeight
+    public val height: NametagHeight
 ): AbstractElement(), InteractionHandler {
     private val uuid: UUID = UUID.randomUUID()
     public val id: Int = VirtualEntityUtils.requestEntityId()

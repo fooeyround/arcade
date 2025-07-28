@@ -11,9 +11,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 
 public class NametagHeight private constructor(
-    public val height: Double
+    public val value: Double
 ) {
-    internal val attribute by lazy { createAttribute(this.height) }
+    internal val attribute by lazy { createAttribute(this.value) }
 
     public companion object {
         private const val ARMOR_STAND_HEIGHT = 1.975
@@ -22,7 +22,7 @@ public class NametagHeight private constructor(
         private val SCALE_ID = ResourceUtils.arcade("nametag")
 
         public val CODEC: Codec<NametagHeight> = Codec.doubleRange(MIN_HEIGHT, MAX_HEIGHT)
-            .xmap(::of, NametagHeight::height)
+            .xmap(::of, NametagHeight::value)
 
         public val DEFAULT: NametagHeight = of(0.275)
         public val INITIAL: NametagHeight = of(0.45)
