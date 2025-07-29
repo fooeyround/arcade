@@ -17,8 +17,9 @@ public class NametagHeight private constructor(
 
     public companion object {
         private const val ARMOR_STAND_HEIGHT = 1.975
-        private const val MIN_HEIGHT = 0.0625 * ARMOR_STAND_HEIGHT
-        private const val MAX_HEIGHT = 16.0 * ARMOR_STAND_HEIGHT
+        public const val MIN_HEIGHT: Double = 0.0625 * ARMOR_STAND_HEIGHT
+        public const val MAX_HEIGHT: Double = 16.0 * ARMOR_STAND_HEIGHT
+
         private val SCALE_ID = ResourceUtils.arcade("nametag")
 
         public val CODEC: Codec<NametagHeight> = Codec.doubleRange(MIN_HEIGHT, MAX_HEIGHT)

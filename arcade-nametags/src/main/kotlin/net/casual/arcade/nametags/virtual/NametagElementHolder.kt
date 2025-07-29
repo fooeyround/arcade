@@ -122,6 +122,9 @@ public open class NametagElementHolder(
         consumer: Consumer<Packet<ClientGamePacketListener>>
     ) {
         this.updateObserver(connection, consumer)
+        if (this.isMountedToOwner()) {
+            consumer.accept(ClientboundSetPassengersPacket(this.entity))
+        }
     }
 
     override fun stopWatching(connection: ServerGamePacketListenerImpl): Boolean {
