@@ -27,7 +27,7 @@ import java.util.function.Consumer
 public class NametagHeightElement(
     private val entity: Entity,
     public val height: NametagHeight
-): AbstractElement(), InteractionHandler {
+): AbstractElement() {
     private val uuid: UUID = UUID.randomUUID()
     public val id: Int = VirtualEntityUtils.requestEntityId()
 
@@ -57,19 +57,6 @@ public class NametagHeightElement(
 
     override fun notifyMove(oldPos: Vec3, currentPos: Vec3, delta: Vec3) {
 
-    }
-
-    override fun interact(player: ServerPlayer, hand: InteractionHand) {
-        val item = player.getItemInHand(hand)
-        player.gameMode.useItem(player, player.level(), item, hand)
-    }
-
-    override fun interactAt(player: ServerPlayer, hand: InteractionHand, pos: Vec3) {
-        this.interact(player, hand)
-    }
-
-    override fun getInteractionHandler(player: ServerPlayer): InteractionHandler {
-        return this
     }
 
     public companion object {
