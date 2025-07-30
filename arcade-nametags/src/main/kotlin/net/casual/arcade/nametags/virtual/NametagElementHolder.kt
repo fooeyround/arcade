@@ -144,6 +144,13 @@ public open class NametagElementHolder(
         return this.entity.position()
     }
 
+    override fun isPartOf(entityId: Int): Boolean {
+        if (super.isPartOf(entityId)) {
+            return true
+        }
+        return this.getNametagElements().any { it.getMountingId() == entityId }
+    }
+
     public open fun isMountedToOwner(): Boolean {
         return true
     }
