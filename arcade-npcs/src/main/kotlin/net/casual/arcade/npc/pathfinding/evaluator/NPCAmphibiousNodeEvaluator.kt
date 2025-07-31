@@ -15,7 +15,7 @@ import net.minecraft.world.level.pathfinder.PathType
 import net.minecraft.world.level.pathfinder.Target
 import kotlin.math.max
 
-public class NPCAmphibiousNodeEvaluator: NPCWalkNodeEvaluator() {
+public open class NPCAmphibiousNodeEvaluator: NPCWalkNodeEvaluator() {
     private var oldWalkableCost: Float = 0.0F
     private var oldWaterBorderCost: Float = 0.0F
 
