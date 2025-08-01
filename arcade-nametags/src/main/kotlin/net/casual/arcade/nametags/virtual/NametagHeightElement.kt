@@ -6,7 +6,6 @@ package net.casual.arcade.nametags.virtual
 
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils
 import eu.pb4.polymer.virtualentity.api.elements.AbstractElement
-import eu.pb4.polymer.virtualentity.api.elements.VirtualElement.InteractionHandler
 import eu.pb4.polymer.virtualentity.api.tracker.EntityTrackedData
 import eu.pb4.polymer.virtualentity.api.tracker.SimpleDataTracker
 import it.unimi.dsi.fastutil.ints.IntList
@@ -17,7 +16,6 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType.ARMOR_STAND
 import net.minecraft.world.phys.Vec3

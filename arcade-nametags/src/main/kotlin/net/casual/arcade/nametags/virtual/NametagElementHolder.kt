@@ -7,7 +7,6 @@ package net.casual.arcade.nametags.virtual
 import eu.pb4.polymer.virtualentity.api.ElementHolder
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment
-import eu.pb4.polymer.virtualentity.api.elements.VirtualElement
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement.InteractionHandler
 import eu.pb4.polymer.virtualentity.impl.HolderHolder
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
@@ -32,6 +31,8 @@ public open class NametagElementHolder(
 ): ElementHolder() {
     private val nametags = Reference2ReferenceLinkedOpenHashMap<Nametag, NametagElement>()
     private val watching = Reference2ObjectLinkedOpenHashMap<ServerGamePacketListenerImpl, MutableSet<NametagElement>>()
+
+    protected var retargeting: InteractionHandler = RetargetingInteractionHandler(this.entity)
 
     public val root: NametagHeightElement = NametagHeightElement(this.entity, NametagHeight.INITIAL)
 
@@ -155,6 +156,9 @@ public open class NametagElementHolder(
     }
 
     override fun getInteraction(id: Int, player: ServerPlayer): InteractionHandler {
+        if (id == this.root.id) {
+            return this.retargeting
+        }
         return PassthroughInteractionHandler
     }
 
