@@ -226,9 +226,6 @@ public object ResourcePackUtils {
             replacer.block()
             val shader = ShaderUtils.getOutlineVertexShader(replacer.getMap(), replacer.getRainbow())
             builder.addData("assets/minecraft/shaders/core/rendertype_outline.vsh", shader.encodeToByteArray())
-            if (replacer.getRainbow() != null) {
-                builder.addData("assets/minecraft/shaders/core/rendertype_outline.json", ShaderUtils.getOutlineJsonShader().encodeToByteArray())
-            }
         }
     }
 
