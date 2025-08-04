@@ -162,8 +162,8 @@ public class PlayerHeadComponents(private val shift: Int) {
         try {
             val image = ImageIO.read(URI(skinTextureUrl).toURL())
             return this.convertImageToComponent(
-                { x, y -> Color(image.getRGB(x + 40, y + 8)) },
-                { x, y -> Color(image.getRGB(x + 8, y + 8), true) }
+                { x, y -> Color(image.getRGB(x + 8, y + 8), true) },
+                { x, y -> Color(image.getRGB(x + 40, y + 8), true) }
             )
         } catch (e: IOException) {
             ArcadeUtils.logger.error("Failed to generate head texture from url: $skinTextureUrl", e)
