@@ -8,6 +8,7 @@ import net.casual.arcade.npc.FakePlayer
 import net.casual.arcade.npc.pathfinding.NPCPathfinder
 import net.casual.arcade.npc.pathfinding.evaluator.NPCAmphibiousNodeEvaluator
 import net.minecraft.core.BlockPos
+import net.minecraft.world.level.pathfinder.PathType
 import net.minecraft.world.phys.Vec3
 
 public open class NPCAmphibiousPathNavigation(player: FakePlayer): NPCPathNavigation(player) {
@@ -30,6 +31,15 @@ public open class NPCAmphibiousPathNavigation(player: FakePlayer): NPCPathNaviga
 
     override fun canMoveDirectly(start: Vec3, end: Vec3): Boolean {
         return this.player.isInLiquid && this.isClearForMovementBetween(this.player, start, end, false)
+    }
+
+    override fun setMoveTarget(next: Vec3, type: PathType) {
+        super.setMoveTarget(next, type)
+        if (type == PathType.WALKABLE || type == PathType.WATER_BORDER) {
+            if (this.player.isInWater) {
+                this.player.moveControl.jump()
+            }
+        }
     }
 
     override fun isStableDestination(pos: BlockPos): Boolean {

@@ -16,22 +16,37 @@ import net.minecraft.world.level.pathfinder.Target
 import kotlin.math.max
 
 public open class NPCAmphibiousNodeEvaluator: NPCWalkNodeEvaluator() {
+    private var oldWaterCost: Float = 0.0F
     private var oldWalkableCost: Float = 0.0F
     private var oldWaterBorderCost: Float = 0.0F
+
+    protected open fun getWalkableMalus(player: FakePlayer): Float {
+        return 0.0F
+    }
+
+    protected open fun getWaterBorderMalus(player: FakePlayer): Float {
+        return 2.0F
+    }
+
+    protected open fun getWaterMalus(player: FakePlayer): Float {
+        return 4.0F
+    }
 
     override fun prepare(level: PathNavigationRegion, player: FakePlayer) {
         super.prepare(level, player)
 
-        player.setPathfindingMalus(PathType.WATER, 0.0f)
         this.oldWalkableCost = player.getPathfindingMalus(PathType.WALKABLE)
-        player.setPathfindingMalus(PathType.WALKABLE, 0.0f)
+        player.setPathfindingMalus(PathType.WALKABLE, this.getWalkableMalus(player))
         this.oldWaterBorderCost = player.getPathfindingMalus(PathType.WATER_BORDER)
-        player.setPathfindingMalus(PathType.WATER_BORDER, 2.0f)
+        player.setPathfindingMalus(PathType.WATER_BORDER, this.getWaterBorderMalus(player))
+        this.oldWaterCost = player.getPathfindingMalus(PathType.WATER)
+        player.setPathfindingMalus(PathType.WATER, this.getWaterMalus(player))
     }
 
     override fun done() {
         this.player?.setPathfindingMalus(PathType.WALKABLE, this.oldWalkableCost)
         this.player?.setPathfindingMalus(PathType.WATER_BORDER, this.oldWaterBorderCost)
+        this.player?.setPathfindingMalus(PathType.WATER, this.oldWaterCost)
         super.done()
     }
 
@@ -94,22 +109,22 @@ public open class NPCAmphibiousNodeEvaluator: NPCWalkNodeEvaluator() {
         return true
     }
 
-    override fun getPathType(context: NPCPathfindingContext, x: Int, y: Int, z: Int): PathType {
-        val pathType = context.getPathTypeFromState(x, y, z)
-        if (pathType == PathType.WATER) {
-            val mutableBlockPos = BlockPos.MutableBlockPos()
-
-            for (direction in Direction.entries) {
-                mutableBlockPos.set(x, y, z).move(direction)
-                val pathType2 = context.getPathTypeFromState(mutableBlockPos.x, mutableBlockPos.y, mutableBlockPos.z)
-                if (pathType2 == PathType.BLOCKED) {
-                    return PathType.WATER_BORDER
-                }
-            }
-
-            return PathType.WATER
-        } else {
-            return super.getPathType(context, x, y, z)
-        }
-    }
+    // override fun getPathType(context: NPCPathfindingContext, x: Int, y: Int, z: Int): PathType {
+    //     val pathType = context.getPathTypeFromState(x, y, z)
+    //     if (pathType == PathType.WATER) {
+    //         val mutableBlockPos = BlockPos.MutableBlockPos()
+    //
+    //         for (direction in Direction.entries) {
+    //             mutableBlockPos.set(x, y, z).move(direction)
+    //             val pathType2 = context.getPathTypeFromState(mutableBlockPos.x, mutableBlockPos.y, mutableBlockPos.z)
+    //             if (pathType2 == PathType.BLOCKED) {
+    //                 return PathType.WATER_BORDER
+    //             }
+    //         }
+    //
+    //         return PathType.WATER
+    //     } else {
+    //         return super.getPathType(context, x, y, z)
+    //     }
+    // }
 }

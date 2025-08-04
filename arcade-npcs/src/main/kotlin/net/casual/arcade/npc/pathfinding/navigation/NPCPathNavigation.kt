@@ -232,13 +232,14 @@ public abstract class NPCPathNavigation(public val player: FakePlayer) {
 
             if (!this.isDone()) {
                 val path = this.path!!
-                val next = if (this.player.isSprinting && path.nextNodeIndex + 1 < path.nodeCount) {
-                    path.getEntityPosAtNode(this.player, path.nextNodeIndex + 1)
+                val index = if (this.player.isSprinting && path.nextNodeIndex + 1 < path.nodeCount) {
+                    path.nextNodeIndex + 1
                 } else {
-                    path.getNextEntityPos(this.player)
+                    path.nextNodeIndex
                 }
+                val next = path.getEntityPosAtNode(this.player, index)
                 val modified = next.with(Direction.Axis.Y, this.getGroundY(next))
-                this.player.moveControl.setTarget(modified, this.speedModifier)
+                this.setMoveTarget(modified, path.getNode(index).type)
             }
         }
     }
@@ -288,6 +289,10 @@ public abstract class NPCPathNavigation(public val player: FakePlayer) {
             return pos.closerToCenterThan(midPoint, (localPath.nodeCount - localPath.nextNodeIndex).toDouble())
         }
         return false
+    }
+
+    protected open fun setMoveTarget(next: Vec3, type: PathType) {
+        this.player.moveControl.setTarget(next, this.speedModifier)
     }
 
     protected abstract fun createPathfinder(maxVisitedNodes: Int): NPCPathfinder
