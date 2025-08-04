@@ -15,9 +15,13 @@ public class RetargetingInteractionHandler(
     public val owner: Entity
 ): InteractionHandler {
     override fun attack(player: ServerPlayer) {
-        player.connection.handleInteract(
-            ServerboundInteractPacket.createAttackPacket(this.owner, player.isShiftKeyDown)
-        )
+        if (this.owner.isAttackable) {
+            player.connection.handleInteract(
+                ServerboundInteractPacket.createAttackPacket(this.owner, player.isShiftKeyDown)
+            )
+        } else {
+            player.resetAttackStrengthTicker()
+        }
     }
 
     override fun interact(player: ServerPlayer, hand: InteractionHand) {
