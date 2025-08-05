@@ -32,7 +32,7 @@ public object HiddenCommandManager {
 
     @Suppress("UNUSED_PARAMETER")
     private fun onServerTick(event: ServerTickEvent) {
-        val commands = this.deletion[this.ticks++] ?: return
+        val commands = this.deletion.remove(this.ticks++) ?: return
         for (command in commands) {
             this.commands.remove(command)
         }
@@ -49,7 +49,6 @@ public object HiddenCommandManager {
             }
         }
     }
-
 
     internal fun registerEvents() {
         GlobalEventHandler.Server.register<PlayerCustomClickActionEvent>(::onPlayerCustomClickAction)
