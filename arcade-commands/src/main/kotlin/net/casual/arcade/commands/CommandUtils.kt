@@ -15,6 +15,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import net.casual.arcade.commands.hidden.HiddenCommand
 import net.casual.arcade.commands.hidden.HiddenCommandManager
 import net.casual.arcade.events.server.ServerRegisterCommandEvent
+import net.casual.arcade.utils.ComponentUtils.click
 import net.casual.arcade.utils.ComponentUtils.command
 import net.casual.arcade.utils.TimeUtils.Minutes
 import net.casual.arcade.utils.math.location.Location
@@ -42,7 +43,7 @@ public fun MutableComponent.singleUseFunction(command: HiddenCommand): MutableCo
 }
 
 public fun MutableComponent.function(timeout: MinecraftTimeDuration = 10.Minutes, command: HiddenCommand): MutableComponent {
-    return this.command(HiddenCommandManager.register(timeout, command))
+    return this.click(HiddenCommandManager.register(timeout, command))
 }
 
 public fun CommandSourceStack.success(literal: String, log: Boolean = false): Int {
